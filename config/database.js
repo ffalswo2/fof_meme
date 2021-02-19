@@ -1,13 +1,27 @@
 const mysql = require('mysql2/promise');
 const {logger} = require('./winston');
 
-const pool = mysql.createPool({
-    host: 'database-fof.cipxoaemvcst.ap-northeast-2.rds.amazonaws.com',
-    user: 'ffalswo2',
-    port: 3306,
-    password: 'stephan98!',
-    database: 'fofDB'
-});
+let pool;
+
+if (process.env.NODE_ENV === 'development') {
+
+    pool = mysql.createPool({
+        host: 'database-fof.cipxoaemvcst.ap-northeast-2.rds.amazonaws.com',
+        user: 'ffalswo2',
+        port: 3306,
+        password: 'stephan98!',
+        database: 'fofDB'
+    });
+} else if (process.env.NODE_ENV === 'production') {
+    pool = mysql.createPool({
+        host: 'database-fof.cipxoaemvcst.ap-northeast-2.rds.amazonaws.com',
+        user: 'ffalswo2',
+        port: 3306,
+        password: 'stephan98!',
+        database: 'fofDB'
+    });
+}
+
 
 module.exports = {
     pool: pool

@@ -4,14 +4,14 @@ const { pool } = require("../../../config/database");
 async function userEmailCheck(email) {
   const connection = await pool.getConnection(async (conn) => conn);
   const selectEmailQuery = `
-                SELECT email, nickname 
-                FROM UserInfo 
+                SELECT email, nickName 
+                FROM User 
                 WHERE email = ?;
                 `;
   const selectEmailParams = [email];
   const [emailRows] = await connection.query(
-    selectEmailQuery,
-    selectEmailParams
+      selectEmailQuery,
+      selectEmailParams
   );
   connection.release();
 
@@ -21,14 +21,14 @@ async function userEmailCheck(email) {
 async function userNicknameCheck(nickname) {
   const connection = await pool.getConnection(async (conn) => conn);
   const selectNicknameQuery = `
-                SELECT email, nickname 
-                FROM UserInfo 
-                WHERE nickname = ?;
+                SELECT email, nickName 
+                FROM User 
+                WHERE nickName = ?;
                 `;
   const selectNicknameParams = [nickname];
   const [nicknameRows] = await connection.query(
-    selectNicknameQuery,
-    selectNicknameParams
+      selectNicknameQuery,
+      selectNicknameParams
   );
   connection.release();
   return nicknameRows;
@@ -37,12 +37,12 @@ async function userNicknameCheck(nickname) {
 async function insertUserInfo(insertUserInfoParams) {
   const connection = await pool.getConnection(async (conn) => conn);
   const insertUserInfoQuery = `
-        INSERT INTO UserInfo(email, pswd, nickname)
+        INSERT INTO User(email, password, nickName)
         VALUES (?, ?, ?);
     `;
   const insertUserInfoRow = await connection.query(
-    insertUserInfoQuery,
-    insertUserInfoParams
+      insertUserInfoQuery,
+      insertUserInfoParams
   );
   connection.release();
   return insertUserInfoRow;
@@ -50,19 +50,23 @@ async function insertUserInfo(insertUserInfoParams) {
 
 //SignIn
 async function selectUserInfo(email) {
-  const connection = await pool.getConnection(async (conn) => conn);
-  const selectUserInfoQuery = `
-                SELECT id, email , pswd, nickname, status 
-                FROM UserInfo 
-                WHERE email = ?;
-                `;
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const selectUserInfoQuery = `
+        select idx, email, password, status from User where email = ?;
+        `;
+    const selectUserInfoParams = [email];
+    const [userInfoRows] = await connection.query(
+        selectUserInfoQuery,
+        selectUserInfoParams
+    );
+    connection.release();
 
-  let selectUserInfoParams = [email];
-  const [userInfoRows] = await connection.query(
-    selectUserInfoQuery,
-    selectUserInfoParams
-  );
-  return [userInfoRows];
+    return [userInfoRows];
+  } catch (err) {
+    logger.error(`App - SignIn DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
 }
 
 module.exports = {
