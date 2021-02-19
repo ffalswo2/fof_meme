@@ -62,7 +62,7 @@ async function selectUserInfo(email) {
     );
     connection.release();
 
-    return [userInfoRows];
+    return userInfoRows;
   } catch (err) {
     logger.error(`App - SignIn DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);

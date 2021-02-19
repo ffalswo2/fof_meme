@@ -107,7 +107,7 @@ exports.signIn = async function (req, res) {
     try {
         const userInfoRows = await usermDao.selectUserInfo(email);
 
-        console.log(userInfoRows[0].length)
+        // console.log(userInfoRows.length)
         if (userInfoRows[0].length < 1) {
             return res.json({
                 isSuccess: false,
@@ -117,6 +117,9 @@ exports.signIn = async function (req, res) {
         }
 
         const hashedPassword = await crypto.createHash('sha512').update(password).digest('hex');
+        // console.log(hashedPassword)
+        // console.log(userInfoRows)
+        // console.log(userInfoRows[0].password)
         if (userInfoRows[0].password !== hashedPassword) {
             return res.json({
                 isSuccess: false,
