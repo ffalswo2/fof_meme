@@ -132,13 +132,13 @@ exports.signIn = async function (req, res) {
             return res.json({
                 isSuccess: false,
                 code: 312,
-                message: "비활성화 된 계정입니다. 고객센터에 문의해주세요."
+                message: "비활성화 된 계정입니다."
             });
         } else if (userInfoRows[0].status === "DELETED") {
             return res.json({
                 isSuccess: false,
                 code: 313,
-                message: "탈퇴 된 계정입니다. 고객센터에 문의해주세요."
+                message: "탈퇴 된 계정입니다."
             });
         }
         //토큰 생성
