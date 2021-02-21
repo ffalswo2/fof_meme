@@ -41,6 +41,7 @@ exports.signUp = async function (req, res) {
         message: "닉네임은 최대 20자리를 입력해주세요."
     });
     try {
+        logger.debug('Sign Up 요청 성공입니다.');
         // 이메일 중복 확인
         const emailRows = await usermDao.userEmailCheck(email);
         if (emailRows.length > 0) {
@@ -71,6 +72,7 @@ exports.signUp = async function (req, res) {
 
         //  await connection.commit(); // COMMIT
         // connection.release();
+
         return res.json({
             isSuccess: true,
             code: 200,
@@ -105,6 +107,7 @@ exports.signIn = async function (req, res) {
 
     if (!password) return res.json({isSuccess: false, code: 304, message: "비밀번호를 입력 해주세요"});
     try {
+        logger.debug('Sign In 요청 성공입니다.');
         const userInfoRows = await usermDao.selectUserInfo(email);
 
         // console.log(userInfoRows.length)
@@ -143,7 +146,8 @@ exports.signIn = async function (req, res) {
         }
         //토큰 생성
         let token = await jwt.sign({
-                id: userInfoRows[0].id,
+                userId: userInfoRows[0].idx,
+                email: userInfoRows[0].email
             }, // 토큰의 내용(payload)
             secret_config.jwtsecret, // 비밀 키
             {
@@ -166,6 +170,40 @@ exports.signIn = async function (req, res) {
         return false;
     }
 };
+
+exports.getProfile = async function (req, res) {
+    const userId = req.verifiedToken.userId;
+    const userEmail = req.verifiedToken.email;
+    // const userEmail = req.verifiedToken.email;
+
+    res.json({
+
+        isSuccess: true,
+        code: 200,
+        message: "테스트 성공"
+    });
+    // try {
+    //     const userProfileRows = await userDao.getUserProfile(userId);
+    //
+    //     if (!userProfileRows) {
+    //         return res.json({
+    //             isSuccess: false,
+    //             code: 300,
+    //             message: "프로필 조회 실패"
+    //         });
+    //     };
+    //
+    //     res.json({
+    //         result: userProfileRows,
+    //         isSuccess: true,
+    //         code: 200,
+    //         message: "프로필 조회 성공"
+    //     });
+    // } catch (err) {
+    //     logger.error(`App - UserProfile Query error\n: ${JSON.stringify(err)}`);
+    //     return false;
+    // }
+}
 
 /**
  update : 2019.09.23
