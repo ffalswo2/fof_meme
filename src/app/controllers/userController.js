@@ -41,7 +41,7 @@ exports.signUp = async function (req, res) {
         message: "닉네임은 최대 20자리를 입력해주세요."
     });
     try {
-        logger.debug('Sign Up 요청 성공입니다.');
+
         // 이메일 중복 확인
         const emailRows = await usermDao.userEmailCheck(email);
         if (emailRows.length > 0) {
@@ -52,6 +52,7 @@ exports.signUp = async function (req, res) {
                 message: "중복된 이메일입니다."
             });
         }
+        logger.debug('Sign Up 요청 성공입니다.');
 
         // 닉네임 중복 확인
         const nicknameRows = await usermDao.userNicknameCheck(nickname);
