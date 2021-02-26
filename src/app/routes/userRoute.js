@@ -4,6 +4,7 @@ module.exports = function(app){
 
     app.route('/signup').post(user.signUp);
     app.route('/login').post(user.signIn);
+    app.post('/user/meme',jwtMiddleware, user.pickCategory);
     app.get('/user/profile', jwtMiddleware, user.getProfile);
     app.get('/check', jwtMiddleware, user.check);
 };

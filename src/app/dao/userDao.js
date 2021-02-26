@@ -69,9 +69,53 @@ async function selectUserInfo(email) {
   }
 }
 
+async function setUserCategory(userId,categoryIdx) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const insertUserCategoryQuery = `
+      insert into UserCategory (userIdx,categoryIdx)
+      values (?,?);
+        `;
+    const insertUserCategoryParams = [userId,categoryIdx];
+    const [userCategoryRows] = await connection.query(
+        insertUserCategoryQuery,
+        insertUserCategoryParams
+    );
+    connection.release();
+
+    return userCategoryRows;
+  } catch (err) {
+    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
+// async function setUserCategory(userId,categoryIdx) {
+//   try {
+//     const connection = await pool.getConnection(async (conn) => conn);
+//     const insertUserCategoryQuery = `
+//       update UserCategory
+//       set category${categoryIdx} = 'Y'
+//       where UserCategory.userIdx = ?;
+//         `;
+//     const insertUserCategoryParams = [userId,categoryIdx];
+//     const [userCategoryRows] = await connection.query(
+//         insertUserCategoryQuery,
+//         insertUserCategoryParams
+//     );
+//     connection.release();
+//
+//     return userCategoryRows;
+//   } catch (err) {
+//     logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+//     return res.status(500).send(`Error: ${err.message}`);
+//   }
+// }
+
 module.exports = {
   userEmailCheck,
   userNicknameCheck,
   insertUserInfo,
   selectUserInfo,
+  setUserCategory,
 };

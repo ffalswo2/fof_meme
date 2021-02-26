@@ -8,6 +8,7 @@ const secret_config = require('../../../config/secret');
 
 const usermDao = require('../dao/userDao');
 const { constants } = require('buffer');
+const regexPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
 /**
  update : 2020.10.4
@@ -18,6 +19,7 @@ exports.signUp = async function (req, res) {
         email, password, nickname
     } = req.body;
 
+    if (typeof email != "string" || typeof password != "string" || typeof nickname != "string") return res.json({isSuccess: false, code: 310, message: "타입을 다시 한번 확인해주세요"});
     if (!email) return res.json({isSuccess: false, code: 301, message: "이메일을 입력해주세요."});
     if (email.length > 30) return res.json({
         isSuccess: false,
@@ -27,7 +29,7 @@ exports.signUp = async function (req, res) {
 
     if (!regexEmail.test(email)) return res.json({isSuccess: false, code: 303, message: "이메일을 형식을 정확하게 입력해주세요."});
 
-    if (!password) return res.json({isSuccess: false, code: 304, message: "비밀번호를 입력 해주세요."});
+    if (!password || !regexPassword.test(password)) return res.json({isSuccess: false, code: 304, message: "비밀번호를 다시 확인해주세요."});
     if (password.length < 6 || password.length > 20) return res.json({
         isSuccess: false,
         code: 305,
@@ -96,7 +98,7 @@ exports.signIn = async function (req, res) {
         email, password
     } = req.body;
 
-
+    if (typeof email != "string" || typeof password != "string") return res.json({isSuccess: false, code: 309, message: "타입을 다시 한번 확인해주세요"});
     if (!email) return res.json({isSuccess: false, code: 301, message: "이메일을 입력해주세요."});
     if (email.length > 30) return res.json({
         isSuccess: false,
@@ -168,9 +170,37 @@ exports.signIn = async function (req, res) {
 
     } catch (err) {
         logger.error(`App - SignIn Query error\n: ${JSON.stringify(err)}`);
-        return false;
+        return res.status(500).send(`Error: ${err.message}`);
     }
 };
+
+exports.pickCategory = async function (req, res) {
+    const userId = req.verifiedToken.userId;
+    const {
+        categoryIdx
+    } = req.body;
+
+    if (typeof categoryIdx != "object") return res.json({isSuccess: false, code: 302, message: "타입을 다시 한번 확인해주세요"});
+    if (!categoryIdx) return res.json({isSuccess: false, code: 300, message: "카테고리 아이디값을 확인해주세요"});
+    if (categoryIdx.length < 1) return res.json({isSuccess: false, code: 301, message: "카테고리 아이디값을 하나 이상은 보내주셔야 합니다"})
+
+    try {
+        for (let i=0; i<categoryIdx.length; i++) {
+            const userCategory = await usermDao.setUserCategory(userId,categoryIdx[i]);
+        }
+
+        logger.debug('유저카테고리 등록 요청 성공');
+        res.json({
+            isSuccess: true,
+            code: 200,
+            message: "밈 집중선택 성공"
+        });
+    } catch (err) {
+        logger.error(`App - UserCategory Query error\n: ${JSON.stringify(err)}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+}
+
 
 exports.getProfile = async function (req, res) {
     const userId = req.verifiedToken.userId;
