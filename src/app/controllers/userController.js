@@ -8,7 +8,7 @@ const secret_config = require('../../../config/secret');
 
 const usermDao = require('../dao/userDao');
 const { constants } = require('buffer');
-const regexPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+const regexPassword = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/;
 
 /**
  update : 2020.10.4
@@ -113,8 +113,7 @@ exports.signIn = async function (req, res) {
         logger.debug('Sign In 요청 성공입니다.');
         const userInfoRows = await usermDao.selectUserInfo(email);
 
-        // console.log(userInfoRows.length)
-        if (userInfoRows[0].length < 1) {
+        if (userInfoRows.length < 1) {
             return res.json({
                 isSuccess: false,
                 code: 310,
@@ -234,6 +233,24 @@ exports.getProfile = async function (req, res) {
     //     logger.error(`App - UserProfile Query error\n: ${JSON.stringify(err)}`);
     //     return false;
     // }
+}
+
+exports.signout = async function (req, res) {
+    const userId = req.verifiedToken.userId;
+
+    try {
+        const userSignOut = await usermDao.deleteUser(userId);
+
+        logger.debug('유저 탈퇴 등록 요청 성공');
+        res.json({
+            isSuccess: true,
+            code: 200,
+            message: "성공적으로 탈퇴되었습니다"
+        });
+    } catch (err) {
+        logger.error(`App - UserCategory Query error\n: ${JSON.stringify(err)}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
 }
 
 /**

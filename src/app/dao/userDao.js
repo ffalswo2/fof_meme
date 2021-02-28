@@ -6,7 +6,7 @@ async function userEmailCheck(email) {
   const selectEmailQuery = `
                 SELECT email, nickName 
                 FROM User 
-                WHERE email = ?;
+                WHERE email = ? and status = 'ACTIVE';
                 `;
   const selectEmailParams = [email];
   const [emailRows] = await connection.query(
@@ -90,27 +90,27 @@ async function setUserCategory(userId,categoryIdx) {
   }
 }
 
-// async function setUserCategory(userId,categoryIdx) {
-//   try {
-//     const connection = await pool.getConnection(async (conn) => conn);
-//     const insertUserCategoryQuery = `
-//       update UserCategory
-//       set category${categoryIdx} = 'Y'
-//       where UserCategory.userIdx = ?;
-//         `;
-//     const insertUserCategoryParams = [userId,categoryIdx];
-//     const [userCategoryRows] = await connection.query(
-//         insertUserCategoryQuery,
-//         insertUserCategoryParams
-//     );
-//     connection.release();
-//
-//     return userCategoryRows;
-//   } catch (err) {
-//     logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
-//     return res.status(500).send(`Error: ${err.message}`);
-//   }
-// }
+async function deleteUser(userId) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const deleteUserQuery = `
+      update User
+      set status = 'DELETED'
+      where User.idx = ?;
+        `;
+    const deleteUserParams = [userId];
+    const [deleteUserRows] = await connection.query(
+        deleteUserQuery,
+        deleteUserParams
+    );
+    connection.release();
+
+    return deleteUserRows;
+  } catch (err) {
+    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
 
 module.exports = {
   userEmailCheck,
@@ -118,4 +118,5 @@ module.exports = {
   insertUserInfo,
   selectUserInfo,
   setUserCategory,
+  deleteUser
 };

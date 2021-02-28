@@ -4,4 +4,5 @@ module.exports = function(app){
 
     app.get('/app', jwtMiddleware, index.default);
     app.get('/category',index.getCategory);
+    app.get('/report-tag',index.getReportTag);
 };

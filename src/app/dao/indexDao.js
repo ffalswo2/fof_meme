@@ -25,7 +25,20 @@ from Category;`
   return rows;
 }
 
+async function selectReportTag() {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const getReportTagQuery = `
+    select idx,reportTagTitle from ReportTag;
+    `
+
+  const [ReportRows] = await connection.query(getReportTagQuery)
+  connection.release();
+
+  return ReportRows;
+}
+
 module.exports = {
   defaultDao,
-  selectCategory
+  selectCategory,
+  selectReportTag
 };
