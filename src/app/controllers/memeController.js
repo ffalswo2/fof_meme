@@ -263,7 +263,7 @@ exports.getMemeDetail = async function (req, res) {
 
             res.json({
                 data: memeDetail[0][0],
-                similar2: memeDetail[1],
+                similar: memeDetail[1],
                 isSuccess: true,
                 code: 200,
                 message: "밈 상세정보 조회 성공"
@@ -301,6 +301,7 @@ exports.reportMeme = async function (req, res) {
 
         const checkMemeExist = await memeDao.checkMemeExist(memeIdx)
         const checkReportTagExist = await memeDao.checkReportTagExist(reportTagIdx)
+        const checkReported = await memeDao.checkUserReport(userId,memeIdx)
 
         if (checkMemeExist) { // 밈이 존재한다면
             if (!checkReportTagExist) { // 태그가 없는 태그라면
@@ -308,6 +309,14 @@ exports.reportMeme = async function (req, res) {
                     isSuccess: false,
                     code: 300,
                     message: "존재하지 않는 태그 아이디값입니다"
+                });
+            }
+
+            if (checkReported) { // 이미 신고한 사진이라면
+                res.json({
+                    isSuccess: false,
+                    code: 307,
+                    message: "이미 신고한 사진입니다"
                 });
             }
 

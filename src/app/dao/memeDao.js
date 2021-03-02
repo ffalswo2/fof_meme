@@ -394,6 +394,26 @@ async function reportMeme(userId,memeIdx,reportTagIdx) {
     }
 }
 
+async function checkUserReport(userId,memeIdx) {
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const UserReportExistQuery = `
+            select exists(select userIdx from Report where userIdx = ? and memeIdx = ?) as exist;
+        `;
+        const UserReportExistParams = [userId,memeIdx];
+        const [UserReportExistRows] = await connection.query(
+            UserReportExistQuery,
+            UserReportExistParams
+        );
+        connection.release();
+
+        return UserReportExistRows[0].exist;
+    } catch (err) {
+        logger.error(`App - checkUserLikeMeme DB Connection error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+}
+
 module.exports = {
     selectRecUserMeme,
     selectRecAllMeme,
@@ -409,5 +429,6 @@ module.exports = {
     selectUserMeme,
     selectMemeDetail,
     checkReportTagExist,
-    reportMeme
+    reportMeme,
+    checkUserReport
 };
