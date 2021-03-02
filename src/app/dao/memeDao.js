@@ -1,7 +1,7 @@
 const { pool } = require("../../../config/database");
 
 
-async function selectUserMeme(userId,page,size) {
+async function selectRecUserMeme(userId,page,size) {
     const connection = await pool.getConnection(async (conn) => conn);
     const selectMemeQuery = `
         select Meme.idx                                            as memeIdx,
@@ -30,7 +30,7 @@ async function selectUserMeme(userId,page,size) {
     return memeRows;
 }
 
-async function selectAllMeme(userId,page,size) {
+async function selectRecAllMeme(userId,page,size) {
     const connection = await pool.getConnection(async (conn) => conn);
     const selectMemeQuery = `
         select Meme.idx                                            as memeIdx,
@@ -231,9 +231,172 @@ async function checkMemeExist(memeIdx) {
     }
 }
 
+async function selectAllMeme(userId,page,size) {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const selectAllMemeQuery = `
+        select Meme.idx                                            as memeIdx,
+               imageUrl
+        from Meme
+                 join User on User.idx = Meme.userIdx
+                 join MemeCategory on MemeCategory.memeIdx = Meme.idx
+                 join Category on Category.idx = MemeCategory.categoryIdx
+                 join MemeTag on MemeTag.memeIdx = Meme.idx
+                 join Tag on MemeTag.tagIdx = Tag.idx
+        group by Meme.idx limit `+page+`, `+size+`;
+                `;
+    const selectAllMemeParams = [userId,page,size];
+    const [selectAllMemeRows] = await connection.query(
+        selectAllMemeQuery,
+        selectAllMemeParams
+    );
+    connection.release();
+
+    return selectAllMemeRows;
+}
+
+async function selectUserMeme(userId,page,size) {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const selectUserMemeQuery = `
+        select Meme.idx                                            as memeIdx,
+               imageUrl
+        from Meme
+                 join MemeCategory on MemeCategory.memeIdx = Meme.idx
+                 join Category on Category.idx = MemeCategory.categoryIdx
+                 join User on User.idx = Meme.userIdx
+                 join MemeTag on MemeTag.memeIdx = Meme.idx
+                 join Tag on MemeTag.tagIdx = Tag.idx
+        where Category.idx in (select categoryIdx from UserCategory where UserCategory.userIdx = ?)
+        group by Meme.idx limit `+page+`, `+size+`;
+                `;
+    const selectUserMemeParams = [userId,page,size];
+    const [selectUserMemeRows] = await connection.query(
+        selectUserMemeQuery,
+        selectUserMemeParams
+    );
+    connection.release();
+
+    return selectUserMemeRows;
+}
+
+async function selectMemeDetail(userId,memeIdx) {
+    const connection = await pool.getConnection(async (conn) => conn);
+    try {
+        await connection.beginTransaction();
+
+        const memeDetailQuery = `
+            select Meme.idx                                                                      as memeIdx,
+                   User.idx                                                                      as userIdx,
+                   User.profileImage                                                             as profileImage,
+                   User.nickName                                                                 as nickname,
+                   imageUrl,
+                   (select exists(select \`Like\`.userIdx, \`Like\`.memeIdx
+                                  from \`Like\`
+                                  where \`Like\`.userIdx = ? and \`Like\`.memeIdx = ?) as exist) as likeStatus,
+                   concat(group_concat(distinct concat('#', categoryTitle)), ',',
+                          group_concat(distinct concat('#', tagName)))                           as Tag
+            from Meme
+                     left join MemeCategory on Meme.idx = MemeCategory.memeIdx
+                     left join Category on Category.idx = MemeCategory.categoryIdx
+                     left join User on User.idx = Meme.userIdx
+                     left join MemeTag on MemeTag.memeIdx = Meme.idx
+                     left join Tag on MemeTag.tagIdx = Tag.idx
+            where Meme.idx = ?;
+                `;
+        const memeDetailParams = [userId,memeIdx,memeIdx];
+        const [memeDetailRows] = await connection.query(
+            memeDetailQuery,
+            memeDetailParams
+        );
+
+        const similarMemeQuery = `
+            select Meme.idx as memeIdx, imageUrl
+            from Meme
+                     left join MemeCategory on Meme.idx = MemeCategory.memeIdx
+                     left join Category on Category.idx = MemeCategory.categoryIdx
+            where Category.idx in (select Category.idx as categoryIdx
+                                   from Meme
+                                            left join MemeCategory on Meme.idx = MemeCategory.memeIdx
+                                            left join Category on Category.idx = MemeCategory.categoryIdx
+                                   where Meme.idx = ?) and Meme.idx not in (select idx from Meme where Meme.idx = ?)
+            group by Meme.idx limit 0,6;
+        `;
+        const similarMemeParams = [memeIdx,memeIdx];
+        const [similarMemeRows] = await connection.query(
+            similarMemeQuery,
+            similarMemeParams
+        );
+
+
+
+        const updateViewQuery = `
+        update Meme
+set view = view + 1
+where Meme.idx = ?;
+        `;
+        const updateViewParams = [memeIdx];
+        const [updateViewRows] = await connection.query(
+            updateViewQuery,
+            updateViewParams
+        );
+
+        connection.commit();
+        connection.release();
+
+        return [memeDetailRows,similarMemeRows];
+
+    } catch (err) {
+        connection.rollback();
+        connection.release();
+        logger.error(`App - MemeDetail & updateView Transaction error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+
+}
+
+
+async function checkReportTagExist(reportTagIdx) {
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const ReportTagExistQuery = `
+            select exists(select idx,reportTagTitle from ReportTag where idx = ?) as exist;
+        `;
+        const ReportTagExistParams = [reportTagIdx];
+        const [ReportTagExistRows] = await connection.query(
+            ReportTagExistQuery,
+            ReportTagExistParams
+        );
+        connection.release();
+
+        return ReportTagExistRows[0].exist;
+    } catch (err) {
+        logger.error(`App - checkUserLikeMeme DB Connection error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+}
+
+async function reportMeme(userId,memeIdx,reportTagIdx) {
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const reportMemeQuery = `
+            insert into Report (userIdx, memeIdx, tagIdx) values (?,?,?);
+        `;
+        const reportMemeParams = [userId,memeIdx,reportTagIdx];
+        const [reportMemeRows] = await connection.query(
+            reportMemeQuery,
+            reportMemeParams
+        );
+        connection.release();
+
+        return reportMemeRows;
+    } catch (err) {
+        logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+}
+
 module.exports = {
-    selectUserMeme,
-    selectAllMeme,
+    selectRecUserMeme,
+    selectRecAllMeme,
     checkUserCategory,
     selectSimilarMeme,
     checkUserLikeMeme,
@@ -241,5 +404,10 @@ module.exports = {
     likeMeme,
     checkUploader,
     deleteMeme,
-    checkMemeExist
+    checkMemeExist,
+    selectAllMeme,
+    selectUserMeme,
+    selectMemeDetail,
+    checkReportTagExist,
+    reportMeme
 };
