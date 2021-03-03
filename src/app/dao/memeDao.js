@@ -18,9 +18,10 @@ async function selectRecUserMeme(userId,page,size) {
                  join MemeTag on MemeTag.memeIdx = Meme.idx
                  join Tag on MemeTag.tagIdx = Tag.idx
         where Category.idx in (select categoryIdx from UserCategory where UserCategory.userIdx = ?)
+          and Meme.idx not in (select \`Like\`.memeIdx from \`Like\` where \`Like\`.userIdx = ?)
         group by Meme.idx limit `+page+`, `+size+`;
                 `;
-    const selectMemeParams = [userId,page,size];
+    const selectMemeParams = [userId,userId,page,size];
     const [memeRows] = await connection.query(
         selectMemeQuery,
         selectMemeParams
@@ -46,6 +47,7 @@ async function selectRecAllMeme(userId,page,size) {
                  join Category on Category.idx = MemeCategory.categoryIdx
                  join MemeTag on MemeTag.memeIdx = Meme.idx
                  join Tag on MemeTag.tagIdx = Tag.idx
+        where Meme.idx not in (select \`Like\`.memeIdx from \`Like\` where \`Like\`.userIdx = ?)
         group by Meme.idx limit `+page+`, `+size+`;
                 `;
     const selectMemeParams = [userId,page,size];

@@ -261,9 +261,12 @@ exports.getMemeDetail = async function (req, res) {
         if (checkMemeExist) { // 밈이 존재한다면
             const memeDetail = await memeDao.selectMemeDetail(userId,memeIdx) // 밈 상세보기
 
+            let result = {};
+            result['memeDetail'] = memeDetail[0][0];
+            result['similar'] = memeDetail[1];
+
             res.json({
-                data: memeDetail[0][0],
-                similar: memeDetail[1],
+                data: result,
                 isSuccess: true,
                 code: 200,
                 message: "밈 상세정보 조회 성공"

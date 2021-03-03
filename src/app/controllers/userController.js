@@ -203,36 +203,37 @@ exports.pickCategory = async function (req, res) {
 
 exports.getProfile = async function (req, res) {
     const userId = req.verifiedToken.userId;
-    const userEmail = req.verifiedToken.email;
-    // const userEmail = req.verifiedToken.email;
 
-    res.json({
+    try {
 
-        isSuccess: true,
-        code: 200,
-        message: "테스트 성공"
-    });
-    // try {
-    //     const userProfileRows = await userDao.getUserProfile(userId);
-    //
-    //     if (!userProfileRows) {
-    //         return res.json({
-    //             isSuccess: false,
-    //             code: 300,
-    //             message: "프로필 조회 실패"
-    //         });
-    //     };
-    //
-    //     res.json({
-    //         result: userProfileRows,
-    //         isSuccess: true,
-    //         code: 200,
-    //         message: "프로필 조회 성공"
-    //     });
-    // } catch (err) {
-    //     logger.error(`App - UserProfile Query error\n: ${JSON.stringify(err)}`);
-    //     return false;
-    // }
+        const userProfileRows = await usermDao.getUserProfile(userId);
+
+        const profileInfo = userProfileRows[0][0];
+        const insight = userProfileRows[1];
+
+
+        if (!userProfileRows) {
+            return res.json({
+                isSuccess: false,
+                code: 300,
+                message: "프로필 조회 실패"
+            });
+        }
+
+        let result = {};
+        result['profile'] = profileInfo;
+        result['insight'] = insight;
+
+        res.json({
+            data : result,
+            isSuccess: true,
+            code: 200,
+            message: "프로필 조회 성공"
+        });
+    } catch (err) {
+        logger.error(`App - UserProfile Query error\n: ${JSON.stringify(err)}`);
+        return false;
+    }
 }
 
 exports.signout = async function (req, res) {
@@ -251,6 +252,85 @@ exports.signout = async function (req, res) {
         logger.error(`App - UserCategory Query error\n: ${JSON.stringify(err)}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
+}
+
+exports.getUserMeme = async function (req, res) {
+    const userId = req.verifiedToken.userId;
+    // const userEmail = req.verifiedToken.email;
+
+    let {
+        filter, page, size
+    } = req.query;
+
+    if (!filter) return res.json({ isSuccess: false, code: 313, message: "필터를 입력해주세요" });
+    if (!page) return res.json({ isSuccess: false, code: 300, message: "페이지를 입력해주세요" });
+    if (!size) return res.json({ isSuccess: false, code: 301, message: "사이즈를 입력해주세요" });
+    if (page < 1) return res.json({ isSuccess: false, code: 302, message: "페이지 번호를 다시 확인해주세요" });
+
+    page = (page - 1) * size
+
+    if (filter === 'uploaded') { // 업로드한 밈 사진들 조회
+
+        try {
+            const userUploadedRows = await usermDao.selectUploadedMeme(userId,page,size);
+
+
+            if (!userUploadedRows) {
+                return res.json({
+                    isSuccess: false,
+                    code: 310,
+                    message: "업로드한 밈들 조회 실패"
+                });
+            }
+
+            res.json({
+                data: userUploadedRows,
+                isSuccess: true,
+                code: 201,
+                message: "업로드한 밈들 조회 성공"
+            });
+            logger.debug('업로드한 들 조회 요청 성공');
+
+        } catch (err) {
+            logger.error(`App - UploadedMeme Query error\n: ${JSON.stringify(err)}`);
+            return res.status(500).send(`Error: ${err.message}`);
+        }
+
+    } else if (filter === 'favorite') { // 좋아요한 밈들 조회
+
+        try {
+            const userFavMemeRows = await usermDao.selectUserFavMeme(userId,page,size);
+
+            if (!userFavMemeRows) {
+                return res.json({
+                    isSuccess: false,
+                    code: 303,
+                    message: "좋아요한 밈들 조회 실패"
+                });
+            }
+
+            res.json({
+                data: userFavMemeRows,
+                isSuccess: true,
+                code: 200,
+                message: "좋아요한 밈 조회 성공"
+            });
+            logger.debug('좋아요한 밈들 조회 요청 성공');
+
+        } catch (err) {
+            logger.error(`App - FavoriteMeme Query error\n: ${JSON.stringify(err)}`);
+            return res.status(500).send(`Error: ${err.message}`);
+        }
+    } else { // 다른 필터값이 들어왔을 경우
+
+        return res.json({
+            isSuccess: false,
+            code: 320,
+            message: "존재하지 않는 필터입니다"
+        });
+    }
+
+
 }
 
 /**

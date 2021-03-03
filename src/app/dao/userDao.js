@@ -112,11 +112,110 @@ async function deleteUser(userId) {
   }
 }
 
+async function getUserProfile(userId) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+
+    const userProfileQuery = `
+      select profileImage,
+             nickName as nickname,
+             (select count(*)
+              from \`Like\`
+                     join Meme on Meme.idx = \`Like\`.memeIdx
+              where Meme.userIdx = ?)                                as acceptedLikeCnt,
+             (select count(idx) from Meme where Meme.userIdx = ?)    as uploadCnt,
+             (select count(memeIdx) from \`Like\` where userIdx = ?) as likeCnt
+      from User
+      where User.idx = ?;
+        `;
+    const userProfileParams = [userId,userId,userId,userId];
+    const [userProfileRows] = await connection.query(
+        userProfileQuery,
+        userProfileParams
+    );
+
+    const userInsightQuery = `
+      select count(Tag.idx) as cnt, concat('#',tagName) as tagName
+      from Tag
+             left join MemeTag on Tag.idx = MemeTag.tagIdx
+             left join Meme on Meme.idx = MemeTag.memeIdx
+             left join \`Like\` on \`Like\`.memeIdx = Meme.idx
+      where \`Like\`.userIdx = ?
+         or Meme.userIdx = ?
+      group by Tag.idx
+      order by cnt desc limit 5;
+        `;
+    const userInsightParams = [userId,userId];
+    const [userInsightRows] = await connection.query(
+        userInsightQuery,
+        userInsightParams
+    );
+
+    connection.release();
+
+    return [userProfileRows,userInsightRows];
+  } catch (err) {
+    logger.error(`App - UserProfile DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
+async function selectUploadedMeme(userId,page,size) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+
+    const userUploadQuery = `
+      select idx as memeIdx,imageUrl from Meme where Meme.userIdx = ? limit `+page+`, `+size+`;
+        `;
+    const userUploadParams = [userId,page,size];
+    const [userUploadRows] = await connection.query(
+        userUploadQuery,
+        userUploadParams
+    );
+
+    connection.release();
+
+    return userUploadRows;
+  } catch (err) {
+    logger.error(`App - UserProfile DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
+async function selectUserFavMeme(userId,page,size) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+
+    const selectUserFavQuery = `
+      select memeIdx, imageUrl
+      from \`Like\`
+             join Meme on \`Like\`.memeIdx = Meme.idx
+      where \`Like\`.userIdx = ? limit `+page+`, `+size+`;
+        `;
+    const selectUserFavParams = [userId,page,size];
+    const [selectUserFavRows] = await connection.query(
+        selectUserFavQuery,
+        selectUserFavParams
+    );
+
+    connection.release();
+
+    return selectUserFavRows;
+  } catch (err) {
+    logger.error(`App - UserProfile DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
+
 module.exports = {
   userEmailCheck,
   userNicknameCheck,
   insertUserInfo,
   selectUserInfo,
   setUserCategory,
-  deleteUser
+  deleteUser,
+  getUserProfile,
+  selectUploadedMeme,
+  selectUserFavMeme
 };
