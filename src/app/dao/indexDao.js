@@ -37,8 +37,21 @@ async function selectReportTag() {
   return ReportRows;
 }
 
+async function selectTag() {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const getReportTagQuery = `
+    select idx as tagIdx,concat('#',tagName) as tagName from Tag order by rand() limit 8;
+    `
+
+  const [ReportRows] = await connection.query(getReportTagQuery)
+  connection.release();
+
+  return ReportRows;
+}
+
 module.exports = {
   defaultDao,
   selectCategory,
-  selectReportTag
+  selectReportTag,
+  selectTag
 };

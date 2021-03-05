@@ -287,6 +287,7 @@ async function selectMemeDetail(userId,memeIdx) {
 
         const memeDetailQuery = `
             select Meme.idx                                                                      as memeIdx,
+                   Meme.title                                                                    as memeTitle,
                    User.idx                                                                      as userIdx,
                    User.profileImage                                                             as profileImage,
                    User.nickName                                                                 as nickname,
