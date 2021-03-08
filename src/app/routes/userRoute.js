@@ -9,4 +9,8 @@ module.exports = function(app){
     app.get('/check', jwtMiddleware, user.check);
     app.delete('/user',jwtMiddleware, user.signout);
     app.get('/user/meme', jwtMiddleware, user.getUserMeme);
+    app.patch('/profile', jwtMiddleware, user.changeProfile);
+    app.get('/email/auth', jwtMiddleware, user.sendEmail);
+    app.patch('/password', jwtMiddleware, user.changePw);
+
 };

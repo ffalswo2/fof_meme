@@ -207,6 +207,81 @@ async function selectUserFavMeme(userId,page,size) {
   }
 }
 
+async function updateUserEmailNickname(userId,email,nickname) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const updateUserQuery = `
+      update User set email = ?,nickName = ? where User.idx = ?;
+        `;
+    const updateUserParams = [email,nickname,userId];
+    const [updateUserRows] = await connection.query(
+        updateUserQuery,
+        updateUserParams
+    );
+    connection.release();
+
+    return updateUserRows;
+  } catch (err) {
+    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
+async function updateUserEmail(userId,email) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const updateUserQuery = `
+      update User
+      set email = ?
+      where User.idx = ?;        `;
+    const updateUserParams = [email,userId];
+    const [updateUserRows] = await connection.query(
+        updateUserQuery,
+        updateUserParams
+    );
+    connection.release();
+
+    return updateUserRows;
+  } catch (err) {
+    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
+async function updateUserNickname(userId,nickname) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const updateUserQuery = `
+      update User
+      set nickName = ?
+      where User.idx = ?;        `;
+    const updateUserParams = [nickname,userId];
+    const [updateUserRows] = await connection.query(
+        updateUserQuery,
+        updateUserParams
+    );
+    connection.release();
+
+    return updateUserRows;
+  } catch (err) {
+    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
+async function changeUserPw(insertUserInfoParams) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const insertUserInfoQuery = `
+    update User set password = ? where User.idx = ?;
+    `;
+  const insertUserInfoRow = await connection.query(
+      insertUserInfoQuery,
+      insertUserInfoParams
+  );
+  connection.release();
+  return insertUserInfoRow;
+}
+
 
 module.exports = {
   userEmailCheck,
@@ -217,5 +292,9 @@ module.exports = {
   deleteUser,
   getUserProfile,
   selectUploadedMeme,
-  selectUserFavMeme
+  selectUserFavMeme,
+  updateUserEmailNickname,
+  updateUserEmail,
+  updateUserNickname,
+  changeUserPw
 };
