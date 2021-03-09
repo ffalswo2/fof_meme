@@ -9,6 +9,7 @@ async function selectRecUserMeme(userId,page,size) {
                User.profileImage                                   as profileImage,
                User.nickName                                       as nickname,
                imageUrl,
+               Meme.copyright                                      as copyright,
                concat(group_concat(distinct concat('#', categoryTitle)), ',',
                       group_concat(distinct concat('#', tagName))) as Tag
         from Meme
@@ -39,6 +40,7 @@ async function selectRecAllMeme(userId,page,size) {
                User.profileImage                                   as profileImage,
                User.nickName                                       as nickname,
                imageUrl,
+               Meme.copyright                                      as copyright,
                concat(group_concat(distinct concat('#', categoryTitle)), ',',
                       group_concat(distinct concat('#', tagName))) as Tag
         from Meme
