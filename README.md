@@ -1,27 +1,20 @@
-# NPM, Node, Template 관련한 설명 
+# NPM, Node, Template
 
-> NPM = Node Package Manager
+> NPM : Node Package Manager
 ```text
-NPM 을 통해서 Node에서 편하게 쓸 수 있는 라이브러리, 프레임워크들을 관리(다운로드,삭제,etc) 할 수 있다.
-근데, 실질적으로 서버를 구동하는건 NPM이 아니고 Node 다.
-NPM은 그냥 Node를 편하게 쓸 수 있게해주는 서포터다.
-자바스크립트 파일을 짰을때 구동시켜주는건 Node다.
+Node에서 라이브러리, 프레임워크들을 편하게 쓸 수 있도록 관리해주는 이름 그대로 노드 패키지 매니저이다.
 ```
 
-> Node = 구글 크롬의 V8 가상머신 자바스크립트 실행 환경에 기반을 둔 빠르고 확장성 있는 네트워크 애플리케이션을 만들기 위한 플랫폼
+> Node : 구글 크롬의 V8 가상머신, 자바스크립트 실행 환경에 기반을 둔 빠르고 확장성 있는 네트워크 어플리케이션을 위한 Platform
 ```text
-쉽게 요약하면, 자바스크립트 파일을 실행(= 번역) 시켜주는 서버프레임워크
+실질적으로 서버를 구동하는 주체, Javascript 파일을 실행시켜주는 서버 프레임워크
 ```
 
-> 그래서 Node가 어떻게 돌아가는거야?
+> Node의 작동 방식
 ```text
-# 개념버전
-node index.js 를 통해서 js 파일을 실행(=번역) 해주는 건데, package.json 이라는 파일을 통해서 번역 할 때 어떤 라이브러리들을 썼는지, 어떤 환경으로 구동하는지 등의 기초적인 설정값들을 참고해서 실행(=번역) 하는 것이다.
-    
-# 실제버전
-package.json에 dependencies 를 npm을 통해서 install 하면, node_modules 라는 폴더 아래에 라이브러리 소스들이 다운로드 받아지고,
-index.js 내에 Route 혹은 Controller 등의 자바스크립트 소스에서 require (=import) 하여 사용하고 있는 것이다.
-그래서 index.js 를 실행(=번역) 시키는건 사실 package.json 과는 상관이 없다.
+package.json에 dependencies를 npm을 통해서 install 하면, node_modules 라는 폴더 아래에 라이브러리 소스들이 다운로드 받아지고
+index.js 내에서 Route 혹은 Controller 등의 Javascript 소스에서 require(import) 하여 사용하는 것이다.
+따라서 index.js를 실행시키는 것 자체는 packaga.json과는 아무 상관이 없다.
 ```
 
 ---
