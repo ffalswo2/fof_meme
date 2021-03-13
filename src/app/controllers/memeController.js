@@ -347,3 +347,45 @@ exports.reportMeme = async function (req, res) {
         return res.status(500).send(`Error: ${err.message}`);
     }
 }
+
+exports.postMeme = async function (req, res) {
+    const userId = req.verifiedToken.userId;
+    // const userEmail = req.verifiedToken.email;
+
+    const {
+        title,copyright,imageUrl,tag,categoryIdx
+    } = req.body
+
+    if (!title) return res.json({ isSuccess: false, code: 300, message: "제목을 입력해주세요" });
+    if (!copyright) return res.json({ isSuccess: false, code: 304, message: "저작권표시를 입력해주세요" });
+    if (!tag) return res.json({ isSuccess: false, code: 302, message: "태그값들을 입력해주세요" });
+    if (!imageUrl) return res.json({ isSuccess: false, code: 301, message: "이미지 주소를 입력해주세요" });
+    if (!categoryIdx) return res.json({ isSuccess: false, code: 303, message: "카테고리 아이디값을 입력해주세요" });
+
+    if (typeof tag != "object") return res.json({isSuccess: false, code: 305, message: "태그 타입을 다시 한번 확인해주세요"});
+
+    try {
+
+        const postMemeRows = await memeDao.insertNewMeme(userId,title,imageUrl,copyright,tag,categoryIdx);
+
+        if (!postMemeRows) {
+            res.json({
+                isSuccess: false,
+                code: 390,
+                message: "게시물을 올리는데 실패했습니다"
+            });
+        }
+
+        logger.debug('밈 올리기 요청 성공');
+        res.json({
+            isSuccess: true,
+            code: 200,
+            message: "게시물을 올리는데 성공했습니다"
+        });
+
+
+    } catch (err) {
+        logger.error(`App - postMeme Query error\n: ${JSON.stringify(err)}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+}

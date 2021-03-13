@@ -8,4 +8,5 @@ module.exports = function(app){
     app.delete('/meme/:memeIdx',jwtMiddleware,meme.deleteMeme);
     app.get('/meme/:memeIdx',jwtMiddleware, meme.getMemeDetail);
     app.post('/meme/:memeIdx/report/:reportTagIdx',jwtMiddleware, meme.reportMeme);
+    app.post('/meme',jwtMiddleware, meme.postMeme);
 };

@@ -420,6 +420,106 @@ async function checkUserReport(userId,memeIdx) {
     }
 }
 
+async function insertNewMeme(userId,title,imageUrl,copyright,tag,categoryIdx) {
+    const connection = await pool.getConnection(async (conn) => conn);
+    try {
+        await connection.beginTransaction();
+
+        const insertNewMemeQuery = `
+            insert into Meme (userIdx,title,imageUrl,copyright) values (?,?,?,?);
+                `;
+        const insertNewMemeParams = [userId,title,imageUrl,copyright];
+        const [insertNewMemeRows] = await connection.query(
+            insertNewMemeQuery,
+            insertNewMemeParams
+        );
+
+        const memeLastInsertIdQuery = `
+            select last_insert_id() as lastId;
+                `;
+        const [memeLastInsertIdRows] = await connection.query(
+            memeLastInsertIdQuery
+        );
+
+        const memeLastId = memeLastInsertIdRows[0].lastId;
+
+        for (let i=0; i<tag.length; i++) {
+            const tagExistQuery = `
+        select exists (select idx from Tag where tagName = ?) as exist;
+        `;
+            const tagExistParams = [tag[i]];
+            const [tagExistRows] = await connection.query(
+                tagExistQuery,
+                tagExistParams
+            );
+
+            const tagExist = tagExistRows[0].exist;
+            let tagId;
+            if (tagExist) { // 태그가 이미 있다면
+                const tagQuery = `
+                    select idx from Tag where tagName = ?;
+                `;
+                const tagParams = [tag[i]];
+                const [tagRows] = await connection.query(
+                    tagQuery,
+                    tagParams
+                );
+
+                tagId = tagRows[0].idx;
+            } else { // 태그가 없다면
+                const tagQuery = `
+                    INSERT INTO Tag (tagName) VALUES (?);
+                `;
+                const tagParams = [tag[i]];
+                const [tagRows] = await connection.query(
+                    tagQuery,
+                    tagParams
+                );
+
+                const tagLastInsertIdQuery = `
+            select last_insert_id() as lastId;
+                `;
+                const [tagLastInsertIdRows] = await connection.query(
+                    tagLastInsertIdQuery
+                );
+
+                tagId = tagLastInsertIdRows[0].lastId;
+            }
+
+
+            const insertMemeTagQuery = `
+                insert into MemeTag (memeIdx, tagIdx) VALUES (?,?);
+                `;
+            const insertMemeTagParams = [memeLastId,tagId];
+            const [insertMemeTagRows] = await connection.query(
+                insertMemeTagQuery,
+                insertMemeTagParams
+            );
+        }
+
+        const insertMemeCategoryQuery = `
+            insert into MemeCategory (memeIdx, categoryIdx) VALUES (?,?);
+                `;
+        const insertMemeCategoryParams = [memeLastId,categoryIdx];
+        const [insertMemeCategoryRows] = await connection.query(
+            insertMemeCategoryQuery,
+            insertMemeCategoryParams
+        );
+
+        connection.commit();
+        connection.release();
+
+        return [insertMemeCategoryRows];
+
+    } catch (err) {
+        connection.rollback();
+        connection.release();
+        logger.error(`App - insertNewMeme Transaction error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+
+}
+
 module.exports = {
     selectRecUserMeme,
     selectRecAllMeme,
@@ -436,5 +536,6 @@ module.exports = {
     selectMemeDetail,
     checkReportTagExist,
     reportMeme,
-    checkUserReport
+    checkUserReport,
+    insertNewMeme
 };
