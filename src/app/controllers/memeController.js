@@ -389,3 +389,50 @@ exports.postMeme = async function (req, res) {
         return res.status(500).send(`Error: ${err.message}`);
     }
 }
+
+exports.updateCopyright = async function (req, res) {
+    const userId = req.verifiedToken.userId;
+    // const userEmail = req.verifiedToken.email;
+
+    const {
+        memeIdx
+    } = req.params
+
+    const {
+        copyright
+    } = req.body
+
+    if (!memeIdx) return res.json({ isSuccess: false, code: 303, message: "밈 아이디값을 입력해주세요" });
+    if (!copyright) return res.json({ isSuccess: false, code: 302, message: "수정할 저작권값을 입력해주세요"});
+    if (typeof copyright !== "string") return res.json({ isSuccess: false, code: 304, message: "저작권값 타입을 확인해해주세요"});
+
+    try {
+
+        const checkMemeExist = await memeDao.checkMemeExist(memeIdx)
+
+        if (checkMemeExist) { // 밈이 존재한다면
+
+            const updateCopyright = await memeDao.updateCopyright(memeIdx,copyright);
+
+            res.json({
+                isSuccess: true,
+                code: 200,
+                message: "저작권표시 수정 성공"
+            });
+
+
+        } else { // 밈이 존재하지 않는다면
+            res.json({
+                isSuccess: false,
+                code: 301,
+                message: "이미 삭제됬거나 존재하지 않는 사진입니다"
+            });
+        }
+
+        logger.debug('밈 저작권 수정 요청 성공');
+
+    } catch (err) {
+        logger.error(`App - updateCopyright Query error\n: ${JSON.stringify(err)}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+}

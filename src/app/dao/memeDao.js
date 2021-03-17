@@ -9,7 +9,7 @@ async function selectRecUserMeme(userId,page,size) {
                User.profileImage                                   as profileImage,
                User.nickName                                       as nickname,
                imageUrl,
-               Meme.copyright                                      as copyright,
+               concat('(C) ',Meme.copyright,' all rights reserved.')                                    as copyright,
                concat(group_concat(distinct concat('#', categoryTitle)), ',',
                       group_concat(distinct concat('#', tagName))) as Tag
         from Meme
@@ -40,7 +40,7 @@ async function selectRecAllMeme(userId,page,size) {
                User.profileImage                                   as profileImage,
                User.nickName                                       as nickname,
                imageUrl,
-               Meme.copyright                                      as copyright,
+               concat('(C) ',Meme.copyright,' all rights reserved.')                                    as copyright,
                concat(group_concat(distinct concat('#', categoryTitle)), ',',
                       group_concat(distinct concat('#', tagName))) as Tag
         from Meme
@@ -290,7 +290,7 @@ async function selectMemeDetail(userId,memeIdx) {
         const memeDetailQuery = `
             select Meme.idx                                                                      as memeIdx,
                    Meme.title                                                                    as memeTitle,
-                   Meme.copyright                                                                as copyright,
+                   concat('(C) ',Meme.copyright,' all rights reserved.')                                    as copyright,
                    User.idx                                                                      as userIdx,
                    User.profileImage                                                             as profileImage,
                    User.nickName                                                                 as nickname,
@@ -520,6 +520,26 @@ async function insertNewMeme(userId,title,imageUrl,copyright,tag,categoryIdx) {
 
 }
 
+async function updateCopyright(memeIdx,copyright) {
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const updateCopyrightQuery = `
+            update Meme set copyright = ? where Meme.idx = ?;
+        `;
+        const updateCopyrightParams = [copyright,memeIdx];
+        const [updateCopyrightRows] = await connection.query(
+            updateCopyrightQuery,
+            updateCopyrightParams
+        );
+        connection.release();
+
+        return updateCopyrightRows;
+    } catch (err) {
+        logger.error(`App - dislikeMeme DB Connection error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+}
+
 module.exports = {
     selectRecUserMeme,
     selectRecAllMeme,
@@ -537,5 +557,6 @@ module.exports = {
     checkReportTagExist,
     reportMeme,
     checkUserReport,
-    insertNewMeme
+    insertNewMeme,
+    updateCopyright
 };

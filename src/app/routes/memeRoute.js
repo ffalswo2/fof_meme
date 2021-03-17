@@ -9,4 +9,5 @@ module.exports = function(app){
     app.get('/meme/:memeIdx',jwtMiddleware, meme.getMemeDetail);
     app.post('/meme/:memeIdx/report/:reportTagIdx',jwtMiddleware, meme.reportMeme);
     app.post('/meme',jwtMiddleware, meme.postMeme);
+    app.patch('/meme/:memeIdx/copyright',jwtMiddleware, meme.updateCopyright);
 };
