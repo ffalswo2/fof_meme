@@ -72,23 +72,66 @@ async function selectUserInfo(email) {
 async function setUserCategory(userId,categoryIdx) {
   try {
     const connection = await pool.getConnection(async (conn) => conn);
-    const insertUserCategoryQuery = `
+    await connection.beginTransaction();
+
+    for (let i=0; i<categoryIdx.length; i++) {
+      const insertUserCategoryQuery = `
       insert into UserCategory (userIdx,categoryIdx)
       values (?,?);
         `;
-    const insertUserCategoryParams = [userId,categoryIdx];
-    const [userCategoryRows] = await connection.query(
-        insertUserCategoryQuery,
-        insertUserCategoryParams
-    );
+      const insertUserCategoryParams = [userId,categoryIdx[i]];
+      const [userCategoryRows] = await connection.query(
+          insertUserCategoryQuery,
+          insertUserCategoryParams
+      );
+
+    }
+
+    connection.commit();
     connection.release();
 
-    return userCategoryRows;
   } catch (err) {
     logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
+
+async function transUserCategory(userId,categoryIdx) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    await connection.beginTransaction();
+
+    const deleteUserCategoryQuery = `
+      delete from UserCategory where UserCategory.userIdx = ?;
+        `;
+    const deleteUserCategoryParams = [userId];
+    const [deleteUserCategoryRows] = await connection.query(
+        deleteUserCategoryQuery,
+        deleteUserCategoryParams
+    );
+
+    for (let i=0; i<categoryIdx.length; i++) {
+      const insertUserCategoryQuery = `
+      insert into UserCategory (userIdx,categoryIdx)
+      values (?,?);
+        `;
+      const insertUserCategoryParams = [userId,categoryIdx[i]];
+      const [userCategoryRows] = await connection.query(
+          insertUserCategoryQuery,
+          insertUserCategoryParams
+      );
+
+    }
+
+    connection.commit();
+    connection.release();
+
+  } catch (err) {
+    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
 
 async function deleteUser(userId) {
   try {
@@ -282,6 +325,25 @@ async function changeUserPw(insertUserInfoParams) {
   return insertUserInfoRow;
 }
 
+async function checkUserCategory(userId) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const UserCategoryExistQuery = `
+            select exists(select userIdx from UserCategory where userIdx = ?) as exist;
+        `;
+    const UserCategoryExistParams = [userId];
+    const [UserCategoryExistRows] = await connection.query(
+        UserCategoryExistQuery,
+        UserCategoryExistParams
+    );
+    connection.release();
+
+    return UserCategoryExistRows[0].exist;
+  } catch (err) {
+    logger.error(`App - checkUserCategory DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
 
 module.exports = {
   userEmailCheck,
@@ -296,5 +358,7 @@ module.exports = {
   updateUserEmailNickname,
   updateUserEmail,
   updateUserNickname,
-  changeUserPw
+  changeUserPw,
+  transUserCategory,
+  checkUserCategory
 };

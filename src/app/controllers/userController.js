@@ -185,8 +185,12 @@ exports.pickCategory = async function (req, res) {
     if (categoryIdx.length < 1) return res.json({isSuccess: false, code: 301, message: "카테고리 아이디값을 하나 이상은 보내주셔야 합니다"})
 
     try {
-        for (let i=0; i<categoryIdx.length; i++) {
-            const userCategory = await usermDao.setUserCategory(userId,categoryIdx[i]);
+        const checkUserCategory = await usermDao.checkUserCategory(userId);
+
+        if (checkUserCategory) {
+            const transUserCategory = await usermDao.transUserCategory(userId,categoryIdx);
+        } else {
+            const userCategory = await usermDao.setUserCategory(userId,categoryIdx);
         }
 
         logger.debug('유저카테고리 등록 요청 성공');
