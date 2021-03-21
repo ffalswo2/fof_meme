@@ -212,7 +212,8 @@ exports.deleteMeme = async function (req, res) {
 
         if (checkMemeExist) { // 밈이 존재한다면
             const checkMemeUploader = await memeDao.checkUploader(memeIdx) // 밈을 올린 유저 idx을 가져와서 비교
-
+            console.log(checkMemeUploader);
+            console.log(checkMemeUploader[0].userIdx);
             if (userId === checkMemeUploader[0].userIdx) { // 밈을 올린 사람이라면
                 const deleteMeme = await  memeDao.deleteMeme(userId,memeIdx);
 
