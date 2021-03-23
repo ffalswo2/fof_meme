@@ -163,9 +163,10 @@ select concat(date_format(now(), '%Y-%m-%d %H:'), '00 업데이트') as updateTi
 
         const trendTagQuery = `
             select Tag.idx as tagIdx, tagName, searchCnt
-            from Tag join MemeTag on MemeTag.tagIdx = Tag.idx
-            where MemeTag.createdAt >= timestamp(DATE_ADD(NOW(), INTERVAL -1 month ))
-              and MemeTag.createdAt <= timestamp(now())
+            from Tag
+                     join MemeTag on MemeTag.tagIdx = Tag.idx
+            where MemeTag.createdAt >= timestamp(DATE_ADD(NOW(), INTERVAL -1 month))
+              and MemeTag.createdAt <= timestamp(now()) group by tagIdx
             order by searchCnt desc
                 limit 5;
         `;
