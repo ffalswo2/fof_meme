@@ -152,13 +152,13 @@ async function deleteUser(userId) {
   } catch (err) {
     logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
+
   }
 }
 
 async function getUserProfile(userId) {
   try {
     const connection = await pool.getConnection(async (conn) => conn);
-
     const userProfileQuery = `
       select profileImage,
              nickName as nickname,
