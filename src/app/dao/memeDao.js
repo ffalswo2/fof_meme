@@ -4,23 +4,23 @@ const { pool } = require("../../../config/database");
 async function selectRecUserMeme(userId,page,size) {
     const connection = await pool.getConnection(async (conn) => conn);
     const selectMemeQuery = `
-        select Picture.idx                                            as memeIdx,
+        select Meme.idx                                            as memeIdx,
                User.idx                                            as userIdx,
                User.profileImage                                   as profileImage,
                User.nickName                                       as nickname,
                imageUrl,
-               concat('(C) ',Picture.copyright,' all rights reserved.')                                    as copyright,
+               concat('(C) ',Meme.copyright,' all rights reserved.')                                    as copyright,
                concat(group_concat(distinct concat('#', categoryTitle)), ',',
                       group_concat(distinct concat('#', tagName))) as Tag
-        from Picture
-                 join MemeCategory on MemeCategory.memeIdx = Picture.idx
+        from Meme
+                 join MemeCategory on MemeCategory.memeIdx = Meme.idx
                  join Category on Category.idx = MemeCategory.categoryIdx
-                 join User on User.idx = Picture.userIdx
-                 join MemeTag on MemeTag.memeIdx = Picture.idx
+                 join User on User.idx = Meme.userIdx
+                 join MemeTag on MemeTag.memeIdx = Meme.idx
                  join Tag on MemeTag.tagIdx = Tag.idx
         where Category.idx in (select categoryIdx from UserCategory where UserCategory.userIdx = ?)
-          and Picture.idx not in (select \`Like\`.memeIdx from \`Like\` where \`Like\`.userIdx = ?)
-        group by Picture.idx limit `+page+`, `+size+`;
+          and Meme.idx not in (select \`Like\`.memeIdx from \`Like\` where \`Like\`.userIdx = ?)
+        group by Meme.idx limit `+page+`, `+size+`;
                 `;
     const selectMemeParams = [userId,userId,page,size];
     const [memeRows] = await connection.query(
@@ -35,22 +35,22 @@ async function selectRecUserMeme(userId,page,size) {
 async function selectRecAllMeme(userId,page,size) {
     const connection = await pool.getConnection(async (conn) => conn);
     const selectMemeQuery = `
-        select Picture.idx                                            as memeIdx,
+        select Meme.idx                                            as memeIdx,
                User.idx                                            as userIdx,
                User.profileImage                                   as profileImage,
                User.nickName                                       as nickname,
                imageUrl,
-               concat('(C) ',Picture.copyright,' all rights reserved.')                                    as copyright,
+               concat('(C) ',Meme.copyright,' all rights reserved.')                                    as copyright,
                concat(group_concat(distinct concat('#', categoryTitle)), ',',
                       group_concat(distinct concat('#', tagName))) as Tag
-        from Picture
-                 join User on User.idx = Picture.userIdx
-                 join MemeCategory on MemeCategory.memeIdx = Picture.idx
+        from Meme
+                 join User on User.idx = Meme.userIdx
+                 join MemeCategory on MemeCategory.memeIdx = Meme.idx
                  join Category on Category.idx = MemeCategory.categoryIdx
-                 join MemeTag on MemeTag.memeIdx = Picture.idx
+                 join MemeTag on MemeTag.memeIdx = Meme.idx
                  join Tag on MemeTag.tagIdx = Tag.idx
-        where Picture.idx not in (select \`Like\`.memeIdx from \`Like\` where \`Like\`.userIdx = ?)
-        group by Picture.idx limit `+page+`, `+size+`;
+        where Meme.idx not in (select \`Like\`.memeIdx from \`Like\` where \`Like\`.userIdx = ?)
+        group by Meme.idx limit `+page+`, `+size+`;
                 `;
     const selectMemeParams = [userId,page,size];
     const [memeRows] = await connection.query(
@@ -86,16 +86,16 @@ async function selectSimilarMeme(memeIdx) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
         const similarMemeQuery = `
-            select Picture.idx as memeIdx, imageUrl
-            from Picture
-                     left join MemeCategory on Picture.idx = MemeCategory.memeIdx
+            select Meme.idx as memeIdx, imageUrl
+            from Meme
+                     left join MemeCategory on Meme.idx = MemeCategory.memeIdx
                      left join Category on Category.idx = MemeCategory.categoryIdx
             where Category.idx in (select Category.idx as categoryIdx
-                                   from Picture
-                                            left join MemeCategory on Picture.idx = MemeCategory.memeIdx
+                                   from Meme
+                                            left join MemeCategory on Meme.idx = MemeCategory.memeIdx
                                             left join Category on Category.idx = MemeCategory.categoryIdx
-                                   where Picture.idx = ?) and Picture.idx not in (select idx from Picture where Picture.idx = ?)
-            group by Picture.idx;
+                                   where Meme.idx = ?) and Meme.idx not in (select idx from Meme where Meme.idx = ?)
+            group by Meme.idx;
         `;
         const similarMemeParams = [memeIdx,memeIdx];
         const [similarMemeRows] = await connection.query(
@@ -179,7 +179,7 @@ async function checkUploader(memeIdx) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
         const checkUploaderQuery = `
-            select userIdx from Picture where Picture.idx = ?;
+            select userIdx from Meme where Meme.idx = ?;
         `;
         const checkUploaderParams = [memeIdx];
         const [checkUploaderRows] = await connection.query(
@@ -199,7 +199,7 @@ async function deleteMeme(userId,memeIdx) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
         const deleteMemeQuery = `
-            delete from Picture where userIdx = ? and Picture.idx = ?;
+            delete from Meme where userIdx = ? and Meme.idx = ?;
         `;
         const deleteMemeParams = [userId,memeIdx];
         const [deleteMemeRows] = await connection.query(
@@ -219,7 +219,7 @@ async function checkMemeExist(memeIdx) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
         const checkMemeExistQuery = `
-            select exists(select idx from Picture where idx = ?) as exist;
+            select exists(select idx from Meme where idx = ?) as exist;
         `;
         const checkMemeExistParams = [memeIdx];
         const [checkMemeExistRows] = await connection.query(
@@ -238,15 +238,15 @@ async function checkMemeExist(memeIdx) {
 async function selectAllMeme(userId,page,size) {
     const connection = await pool.getConnection(async (conn) => conn);
     const selectAllMemeQuery = `
-        select Picture.idx                                            as memeIdx,
+        select Meme.idx                                            as memeIdx,
                imageUrl
-        from Picture
-                 join User on User.idx = Picture.userIdx
-                 join MemeCategory on MemeCategory.memeIdx = Picture.idx
+        from Meme
+                 join User on User.idx = Meme.userIdx
+                 join MemeCategory on MemeCategory.memeIdx = Meme.idx
                  join Category on Category.idx = MemeCategory.categoryIdx
-                 join MemeTag on MemeTag.memeIdx = Picture.idx
+                 join MemeTag on MemeTag.memeIdx = Meme.idx
                  join Tag on MemeTag.tagIdx = Tag.idx
-        group by Picture.idx limit `+page+`, `+size+`;
+        group by Meme.idx limit `+page+`, `+size+`;
                 `;
     const selectAllMemeParams = [userId,page,size];
     const [selectAllMemeRows] = await connection.query(
@@ -261,16 +261,16 @@ async function selectAllMeme(userId,page,size) {
 async function selectUserMeme(userId,page,size) {
     const connection = await pool.getConnection(async (conn) => conn);
     const selectUserMemeQuery = `
-        select Picture.idx                                            as memeIdx,
+        select Meme.idx                                            as memeIdx,
                imageUrl
-        from Picture
-                 join MemeCategory on MemeCategory.memeIdx = Picture.idx
+        from Meme
+                 join MemeCategory on MemeCategory.memeIdx = Meme.idx
                  join Category on Category.idx = MemeCategory.categoryIdx
-                 join User on User.idx = Picture.userIdx
-                 join MemeTag on MemeTag.memeIdx = Picture.idx
+                 join User on User.idx = Meme.userIdx
+                 join MemeTag on MemeTag.memeIdx = Meme.idx
                  join Tag on MemeTag.tagIdx = Tag.idx
         where Category.idx in (select categoryIdx from UserCategory where UserCategory.userIdx = ?)
-        group by Picture.idx limit `+page+`, `+size+`;
+        group by Meme.idx limit `+page+`, `+size+`;
                 `;
     const selectUserMemeParams = [userId,page,size];
     const [selectUserMemeRows] = await connection.query(
@@ -288,9 +288,9 @@ async function selectMemeDetail(userId,memeIdx) {
         await connection.beginTransaction();
 
         const memeDetailQuery = `
-            select Picture.idx                                                                      as memeIdx,
-                   Picture.title                                                                    as memeTitle,
-                   concat('(C) ',Picture.copyright,' all rights reserved.')                                    as copyright,
+            select Meme.idx                                                                      as memeIdx,
+                   Meme.title                                                                    as memeTitle,
+                   concat('(C) ',Meme.copyright,' all rights reserved.')                                    as copyright,
                    User.idx                                                                      as userIdx,
                    User.profileImage                                                             as profileImage,
                    User.nickName                                                                 as nickname,
@@ -300,13 +300,13 @@ async function selectMemeDetail(userId,memeIdx) {
                                   where \`Like\`.userIdx = ? and \`Like\`.memeIdx = ?) as exist) as likeStatus,
                    concat(group_concat(distinct concat('#', categoryTitle)), ',',
                           group_concat(distinct concat('#', tagName)))                           as Tag
-            from Picture
-                     left join MemeCategory on Picture.idx = MemeCategory.memeIdx
+            from Meme
+                     left join MemeCategory on Meme.idx = MemeCategory.memeIdx
                      left join Category on Category.idx = MemeCategory.categoryIdx
-                     left join User on User.idx = Picture.userIdx
-                     left join MemeTag on MemeTag.memeIdx = Picture.idx
+                     left join User on User.idx = Meme.userIdx
+                     left join MemeTag on MemeTag.memeIdx = Meme.idx
                      left join Tag on MemeTag.tagIdx = Tag.idx
-            where Picture.idx = ?;
+            where Meme.idx = ?;
                 `;
         const memeDetailParams = [userId,memeIdx,memeIdx];
         const [memeDetailRows] = await connection.query(
@@ -315,16 +315,16 @@ async function selectMemeDetail(userId,memeIdx) {
         );
 
         const similarMemeQuery = `
-            select Picture.idx as memeIdx, imageUrl
-            from Picture
-                     left join MemeCategory on Picture.idx = MemeCategory.memeIdx
+            select Meme.idx as memeIdx, imageUrl
+            from Meme
+                     left join MemeCategory on Meme.idx = MemeCategory.memeIdx
                      left join Category on Category.idx = MemeCategory.categoryIdx
             where Category.idx in (select Category.idx as categoryIdx
-                                   from Picture
-                                            left join MemeCategory on Picture.idx = MemeCategory.memeIdx
+                                   from Meme
+                                            left join MemeCategory on Meme.idx = MemeCategory.memeIdx
                                             left join Category on Category.idx = MemeCategory.categoryIdx
-                                   where Picture.idx = ?) and Picture.idx not in (select idx from Picture where Picture.idx = ?)
-            group by Picture.idx limit 0,6;
+                                   where Meme.idx = ?) and Meme.idx not in (select idx from Meme where Meme.idx = ?)
+            group by Meme.idx limit 0,6;
         `;
         const similarMemeParams = [memeIdx,memeIdx];
         const [similarMemeRows] = await connection.query(
@@ -335,9 +335,9 @@ async function selectMemeDetail(userId,memeIdx) {
 
 
         const updateViewQuery = `
-        update Picture
+        update Meme
 set view = view + 1
-where Picture.idx = ?;
+where Meme.idx = ?;
         `;
         const updateViewParams = [memeIdx];
         const [updateViewRows] = await connection.query(
@@ -426,7 +426,7 @@ async function insertNewMeme(userId,title,imageUrl,copyright,tag,categoryIdx) {
         await connection.beginTransaction();
 
         const insertNewMemeQuery = `
-            insert into Picture (userIdx,title,imageUrl,copyright) values (?,?,?,?);
+            insert into Meme (userIdx,title,imageUrl,copyright) values (?,?,?,?);
                 `;
         const insertNewMemeParams = [userId,title,imageUrl,copyright];
         const [insertNewMemeRows] = await connection.query(
@@ -524,7 +524,7 @@ async function updateCopyright(memeIdx,copyright) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
         const updateCopyrightQuery = `
-            update Picture set copyright = ? where Picture.idx = ?;
+            update Meme set copyright = ? where Meme.idx = ?;
         `;
         const updateCopyrightParams = [copyright,memeIdx];
         const [updateCopyrightRows] = await connection.query(
