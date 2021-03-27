@@ -426,7 +426,7 @@ async function insertNewMeme(userId,title,imageUrl,copyright,tag,categoryIdx) {
         await connection.beginTransaction();
 
         const insertNewMemeQuery = `
-            insert into Meme (userIdx,title,imageUrl,copyright) values (?,?,?,?);
+            insert into Picture (userIdx,title,imageUrl,copyright) values (?,?,?,?);
                 `;
         const insertNewMemeParams = [userId,title,imageUrl,copyright];
         const [insertNewMemeRows] = await connection.query(
@@ -524,7 +524,7 @@ async function updateCopyright(memeIdx,copyright) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
         const updateCopyrightQuery = `
-            update Meme set copyright = ? where Picture.idx = ?;
+            update Picture set copyright = ? where Picture.idx = ?;
         `;
         const updateCopyrightParams = [copyright,memeIdx];
         const [updateCopyrightRows] = await connection.query(
