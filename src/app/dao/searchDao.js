@@ -17,9 +17,9 @@ async function searchMemeByCategory(word,page,size) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
         const searchQuery = `
-            select Meme.idx as memeIdx, imageUrl
-            from Meme
-                     join MemeCategory on MemeCategory.memeIdx = Meme.idx
+            select Picture.idx as memeIdx, imageUrl
+            from Picture
+                     join MemeCategory on MemeCategory.memeIdx = Picture.idx
                      join Category on MemeCategory.categoryIdx = Category.idx
             where replace(categoryTitle, ' ', '') like concat('%', replace(?,' ',''), '%') limit ` + page + `, ` + size + `;
         `;
@@ -43,9 +43,9 @@ async function searchMemeByTag(word,page,size) {
         await connection.beginTransaction();
 
         const searchQuery = `
-            select Meme.idx as memeIdx, imageUrl,Tag.idx as tagIdx
-            from Meme
-                     join MemeTag on MemeTag.memeIdx = Meme.idx
+            select Picture.idx as memeIdx, imageUrl,Tag.idx as tagIdx
+            from Picture
+                     join MemeTag on MemeTag.memeIdx = Picture.idx
                      join Tag on MemeTag.tagIdx = Tag.idx
             where replace(tagName, ' ', '') like concat('%', replace(?,' ',''), '%') limit ` + page + `, ` + size + `;
         `;
@@ -129,11 +129,11 @@ async function selectCategoryTopMeme(categoryIdx) {
 
         const categoryTopMemeQuery = `
             select memeIdx,imageUrl, view
-from Meme
-         left join MemeCategory on MemeCategory.memeIdx = Meme.idx
+from Picture
+         left join MemeCategory on MemeCategory.memeIdx = Picture.idx
          left join Category on Category.idx = MemeCategory.categoryIdx
-where MemeCategory.categoryIdx = ? and Meme.updatedAt >= timestamp(DATE_ADD(NOW(), INTERVAL -1 month))
-  and Meme.updatedAt <= timestamp(now())
+where MemeCategory.categoryIdx = ? and Picture.updatedAt >= timestamp(DATE_ADD(NOW(), INTERVAL -1 month))
+  and Picture.updatedAt <= timestamp(now())
 order by view desc
 limit 5;
         `;
@@ -188,9 +188,9 @@ async function selectMemeByTagIdx(tagIdx) {
         const connection = await pool.getConnection(async (conn) => conn);
 
         const countTagMemeQuery = `
-select count(Meme.idx) as memeCount
-from Meme
-         join MemeTag on MemeTag.memeIdx = Meme.idx
+select count(Picture.idx) as memeCount
+from Picture
+         join MemeTag on MemeTag.memeIdx = Picture.idx
          join Tag on MemeTag.tagIdx = Tag.idx
 where tagIdx = ?;
         `;
@@ -202,9 +202,9 @@ where tagIdx = ?;
         )
 
         const tagMemeQuery = `
-            select Meme.idx as memeIdx, imageUrl
-            from Meme
-                     join MemeTag on MemeTag.memeIdx = Meme.idx
+            select Picture.idx as memeIdx, imageUrl
+            from Picture
+                     join MemeTag on MemeTag.memeIdx = Picture.idx
                      join Tag on MemeTag.tagIdx = Tag.idx
             where tagIdx = ?;
         `;

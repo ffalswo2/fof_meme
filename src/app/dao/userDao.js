@@ -164,9 +164,9 @@ async function getUserProfile(userId) {
              nickName as nickname,
              (select count(*)
               from \`Like\`
-                     join Meme on Meme.idx = \`Like\`.memeIdx
-              where Meme.userIdx = ?)                                as acceptedLikeCnt,
-             (select count(idx) from Meme where Meme.userIdx = ?)    as uploadCnt,
+                     join Picture on Picture.idx = \`Like\`.memeIdx
+              where Picture.userIdx = ?)                                as acceptedLikeCnt,
+             (select count(idx) from Picture where Picture.userIdx = ?)    as uploadCnt,
              (select count(memeIdx) from \`Like\` where userIdx = ?) as likeCnt
       from User
       where User.idx = ?;
@@ -181,10 +181,10 @@ async function getUserProfile(userId) {
       select count(Tag.idx) as cnt, concat('#',tagName) as tagName
       from Tag
              left join MemeTag on Tag.idx = MemeTag.tagIdx
-             left join Meme on Meme.idx = MemeTag.memeIdx
-             left join \`Like\` on \`Like\`.memeIdx = Meme.idx
+             left join Picture on Picture.idx = MemeTag.memeIdx
+             left join \`Like\` on \`Like\`.memeIdx = Picture.idx
       where \`Like\`.userIdx = ?
-         or Meme.userIdx = ?
+         or Picture.userIdx = ?
       group by Tag.idx
       order by cnt desc limit 5;
         `;
@@ -208,7 +208,7 @@ async function selectUploadedMeme(userId,page,size) {
     const connection = await pool.getConnection(async (conn) => conn);
 
     const userUploadQuery = `
-      select idx as memeIdx,imageUrl from Meme where Meme.userIdx = ? limit `+page+`, `+size+`;
+      select idx as memeIdx,imageUrl from Picture where Picture.userIdx = ? limit `+page+`, `+size+`;
         `;
     const userUploadParams = [userId,page,size];
     const [userUploadRows] = await connection.query(
@@ -232,7 +232,7 @@ async function selectUserFavMeme(userId,page,size) {
     const selectUserFavQuery = `
       select memeIdx, imageUrl
       from \`Like\`
-             join Meme on \`Like\`.memeIdx = Meme.idx
+             join Picture on \`Like\`.memeIdx = Picture.idx
       where \`Like\`.userIdx = ? limit `+page+`, `+size+`;
         `;
     const selectUserFavParams = [userId,page,size];
