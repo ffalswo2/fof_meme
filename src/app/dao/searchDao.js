@@ -73,6 +73,8 @@ where Tag.idx = ?;
 
         return searchRows;
     } catch (err) {
+        connection.rollback();
+        connection.release();
         logger.error(`App - searchMemeByTag DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }

@@ -383,6 +383,8 @@ async function checkReportTagExist(reportTagIdx) {
 async function reportMeme(userId,memeIdx,reportTagIdx) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
+        await connection.beginTransaction();
+
         const reportMemeQuery = `
             insert into Report (userIdx, memeIdx, tagIdx) values (?,?,?);
         `;
@@ -391,11 +393,28 @@ async function reportMeme(userId,memeIdx,reportTagIdx) {
             reportMemeQuery,
             reportMemeParams
         );
+
+        const selectReportMemeQuery = `
+            select nickName as nickname,Meme.idx as memeIdx,Meme.title as memeTitle,Meme.imageUrl as imageUrl,reportTagTitle,Report.createdAt as reportedTime
+            from Report
+                     join Meme on Report.memeIdx = Meme.idx join ReportTag on ReportTag.idx = Report.tagIdx join User on User.idx = Report.userIdx
+            where Report.userIdx = ?
+              and Report.memeIdx = ?
+              and Report.tagIdx = ?;
+        `;
+        const selectReportMemeParams = [userId,memeIdx,reportTagIdx];
+        const [selectReportMemeRows] = await connection.query(
+            selectReportMemeQuery,
+            selectReportMemeParams
+        );
+        connection.commit();
         connection.release();
 
-        return reportMemeRows;
+        return selectReportMemeRows;
     } catch (err) {
-        logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+        connection.rollback();
+        connection.release();
+        logger.error(`App - reportMeme DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
 }

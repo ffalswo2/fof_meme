@@ -1,10 +1,12 @@
 const {pool} = require('../../../config/database');
 const {logger} = require('../../../config/winston');
+const { smtpTransport } = require('../../../config/email');
 
 const jwt = require('jsonwebtoken');
 const regexEmail = require('regex-email');
 const crypto = require('crypto');
 const secret_config = require('../../../config/secret');
+
 
 const memeDao = require('../dao/memeDao');
 const { constants } = require('buffer');
@@ -325,6 +327,31 @@ exports.reportMeme = async function (req, res) {
             }
 
             const reportMeme = await memeDao.reportMeme(userId,memeIdx,reportTagIdx) // 신고하기
+
+            const mailOptions = {
+                from: "makeus.fofapp@gmail.com",
+                to: "makeus.fofapp@gmail.com",
+                subject: "[포프]신고접수 메일입니다",
+                text: "신고자 닉네임 : " + reportMeme[0].nickname + "\n" + "해당 밈ID : " + reportMeme[0].memeIdx + "\n"
+                    + "해당 밈 제목 : " + reportMeme[0].memeTitle + "\n" + "이미지 주소 : " + reportMeme[0].imageUrl + "\n" + "신고 사유 : " + reportMeme[0].reportTagTitle
+            };
+
+            await smtpTransport.sendMail(mailOptions, (error, responses) =>{
+                if(error){
+                    res.json({
+                        isSuccess: false,
+                        code: 300,
+                        message: "신고 이메일 발송 실패"
+                    });
+                }else{
+                    res.json({
+                        isSuccess: true,
+                        code: 200,
+                        message: "신고 이메일 발송 성공"
+                    });
+                }
+                smtpTransport.close();
+            });
 
             res.json({
                 isSuccess: true,

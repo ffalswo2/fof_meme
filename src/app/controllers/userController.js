@@ -471,6 +471,55 @@ exports.getTokenInfo = async function (req, res) {
     }
 }
 
+exports.sendEmailNotLogin = async function (req, res) {
+    // const userId = req.verifiedToken.userId;
+    const {
+        email
+    }  = req.body;
+
+    if (typeof email != "string") return res.json({isSuccess: false, code: 310, message: "이메일 타입을 다시 한번 확인해주세요"});
+    if (!email) return res.json({isSuccess: false, code: 301, message: "이메일을 입력해주세요."});
+    if (email.length > 30) return res.json({
+        isSuccess: false,
+        code: 302,
+        message: "이메일은 30자리 미만으로 입력해주세요."
+    });
+
+    if (!regexEmail.test(email)) return res.json({isSuccess: false, code: 303, message: "이메일을 형식을 정확하게 입력해주세요."});
+
+
+    var generateRandom = function (min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    const number = generateRandom(111111,999999)
+
+    const mailOptions = {
+        from: "makeus.fofapp@gmail.com",
+        to: email,
+        subject: "[포프]인증 관련 메일입니다",
+        text: "옆에 6자리의 숫자를 입력해주세요 : " + number
+    };
+
+    await smtpTransport.sendMail(mailOptions, (error, responses) =>{
+        if(error){
+            res.json({
+                isSuccess: false,
+                code: 300,
+                message: "인증번호 이메일 발송 실패"
+            });
+        }else{
+            res.json({
+                number: number,
+                isSuccess: true,
+                code: 200,
+                message: "인증번호 이메일 발송 성공"
+            });
+        }
+        smtpTransport.close();
+    });
+}
+
 exports.changePw = async function (req, res) {
     const userId = req.verifiedToken.userId;
     const userEmail = req.verifiedToken.email;
