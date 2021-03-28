@@ -1,10 +1,10 @@
 const nodemailer = require('nodemailer');
 
 const smtpTransport = nodemailer.createTransport({
-    service: "Naver",
+    service: "Gmail",
     auth: {
-        user: "ffalswo2@naver.com",
-        pass: "stephan98!"
+        user: "makeus.fofapp@gmail.com",
+        pass: "fofapp123!"
     },
     tls: {
         rejectUnauthorized: false

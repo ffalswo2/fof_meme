@@ -398,7 +398,7 @@ exports.sendEmail = async function (req, res) {
     const number = generateRandom(111111,999999)
 
     const mailOptions = {
-        from: "ffalswo2@naver.com",
+        from: "makeus.fofapp@gmail.com",
         to: userEmail,
         subject: "[포프]인증 관련 메일입니다",
         text: "옆에 6자리의 숫자를 입력해주세요 : " + number
