@@ -13,4 +13,5 @@ module.exports = function(app){
     app.get('/email/auth', jwtMiddleware, user.sendEmail);
     app.patch('/password', jwtMiddleware, user.changePw);
     app.patch('/profile/image', jwtMiddleware, user.changeProfileImage);
+    app.get('/token/info',jwtMiddleware,user.getTokenInfo);
 };

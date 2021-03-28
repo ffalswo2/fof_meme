@@ -447,6 +447,30 @@ exports.changeProfileImage = async function (req, res) {
     }
 }
 
+exports.getTokenInfo = async function (req, res) {
+    const userId = req.verifiedToken.userId;
+    const userEmail = req.verifiedToken.email;
+
+    if (userId && userEmail) {
+        let result = {};
+        result['userId'] = userId;
+        result['userEmail'] = userEmail;
+
+        res.json({
+            data: result,
+            isSuccess: true,
+            code: 200,
+            message: "토큰 정보값 불러오기 성공"
+        });
+    } else {
+        res.json({
+            isSuccess: false,
+            code: 300,
+            message: "토큰 정보값 불러오기 실패"
+        });
+    }
+}
+
 exports.changePw = async function (req, res) {
     const userId = req.verifiedToken.userId;
     const userEmail = req.verifiedToken.email;
