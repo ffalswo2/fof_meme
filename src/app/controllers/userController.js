@@ -382,7 +382,7 @@ exports.changeProfile = async function (req, res) {
             message: "프로필 개인정보 변경 성공"
         });
     } catch (err) {
-        logger.error(`App - UserCategory Query error\n: ${JSON.stringify(err)}`);
+        logger.error(`App - changeProfile Query error\n: ${JSON.stringify(err)}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
 }
@@ -421,6 +421,30 @@ exports.sendEmail = async function (req, res) {
         }
         smtpTransport.close();
     });
+}
+
+exports.changeProfileImage = async function (req, res) {
+    const userId = req.verifiedToken.userId;
+    const {
+        imageUrl
+    } = req.body;
+
+    if (!imageUrl) return res.json({isSuccess: false, code: 300, message: "이미지URL을 입력해주세요"});
+    if (typeof imageUrl != "string") return res.json({isSuccess: false, code: 301, message: "이미지 타입을 다시 한번 확인해주세요"});
+
+    try {
+        const changeProfileImage = await usermDao.updateUserImage(userId,imageUrl);
+
+        logger.debug('프로필 이미지 변경 요청 성공');
+        res.json({
+            isSuccess: true,
+            code: 200,
+            message: "프로필 이미지 변경 성공"
+        });
+    } catch (err) {
+        logger.error(`App - changeProfileImage Query error\n: ${JSON.stringify(err)}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
 }
 
 exports.changePw = async function (req, res) {

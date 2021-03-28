@@ -12,5 +12,5 @@ module.exports = function(app){
     app.patch('/profile', jwtMiddleware, user.changeProfile);
     app.get('/email/auth', jwtMiddleware, user.sendEmail);
     app.patch('/password', jwtMiddleware, user.changePw);
-
+    app.patch('/profile/image', jwtMiddleware, user.changeProfileImage);
 };

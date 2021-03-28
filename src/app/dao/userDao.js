@@ -91,7 +91,7 @@ async function setUserCategory(userId,categoryIdx) {
     connection.release();
 
   } catch (err) {
-    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    logger.error(`App - setUserCategory DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
@@ -127,7 +127,7 @@ async function transUserCategory(userId,categoryIdx) {
     connection.release();
 
   } catch (err) {
-    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    logger.error(`App - transUserCategory DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
@@ -150,7 +150,7 @@ async function deleteUser(userId) {
 
     return deleteUserRows;
   } catch (err) {
-    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    logger.error(`App - deleteUser DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
 
   }
@@ -198,7 +198,7 @@ async function getUserProfile(userId) {
 
     return [userProfileRows,userInsightRows];
   } catch (err) {
-    logger.error(`App - UserProfile DB Connection error\n: ${err.message}`);
+    logger.error(`App - getUserProfile DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
@@ -220,7 +220,7 @@ async function selectUploadedMeme(userId,page,size) {
 
     return userUploadRows;
   } catch (err) {
-    logger.error(`App - UserProfile DB Connection error\n: ${err.message}`);
+    logger.error(`App - selectUploadedMeme DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
@@ -245,7 +245,7 @@ async function selectUserFavMeme(userId,page,size) {
 
     return selectUserFavRows;
   } catch (err) {
-    logger.error(`App - UserProfile DB Connection error\n: ${err.message}`);
+    logger.error(`App - selectUserFavMeme DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
@@ -265,7 +265,7 @@ async function updateUserEmailNickname(userId,email,nickname) {
 
     return updateUserRows;
   } catch (err) {
-    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    logger.error(`App - updateUserEmailNickname DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
@@ -286,7 +286,7 @@ async function updateUserEmail(userId,email) {
 
     return updateUserRows;
   } catch (err) {
-    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    logger.error(`App - updateUserEmail DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
@@ -307,7 +307,28 @@ async function updateUserNickname(userId,nickname) {
 
     return updateUserRows;
   } catch (err) {
-    logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
+    logger.error(`App - updateUserNickname DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
+async function updateUserImage(userId,imageUrl) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const updateUserQuery = `
+      update User
+      set profileImage = ?
+      where User.idx = ?;        `;
+    const updateUserParams = [imageUrl,userId];
+    const [updateUserRows] = await connection.query(
+        updateUserQuery,
+        updateUserParams
+    );
+    connection.release();
+
+    return updateUserRows;
+  } catch (err) {
+    logger.error(`App - updateUserImage DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
@@ -360,5 +381,6 @@ module.exports = {
   updateUserNickname,
   changeUserPw,
   transUserCategory,
-  checkUserCategory
+  checkUserCategory,
+  updateUserImage
 };
