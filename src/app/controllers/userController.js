@@ -401,7 +401,46 @@ exports.sendEmail = async function (req, res) {
         from: "makeus.fofapp@gmail.com",
         to: userEmail,
         subject: "[포프]인증 관련 메일입니다",
-        text: "옆에 6자리의 숫자를 입력해주세요 : " + number
+        // text: "옆에 6자리의 숫자를 입력해주세요 : " + number
+        html: "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+            " <head>\n" +
+            "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+            "  <title></title>\n" +
+            "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n" +
+            "<table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\">\n" +
+            "\t\n" +
+            "<tr>\n" +
+            "<td bgcolor=\"#000000\" style=\"padding: 40px 30px 30px 30px\">\n" +
+            " <h1><span style=\"color:#FE2C55;\">F</span><span style=\"color:#07C87B;\">O</span><span style=\"color:#FE2C55;\">F</span></h1>\n" +
+            "</td>\n" +
+            " </tr>\n" +
+            "<tr>\n" +
+            " <td bgcolor=\"#07C87B\" style=\"padding: 5px 0px 0px 5px;\">\n" +
+            "\n" +
+            "</td>\n" +
+            " </tr>\n" +
+            " <tr>\n" +
+            "  <td bgcolor=\"#F1F4F9\" style=\"padding: 70px 20px 30px 70px;\">\n" +
+            " <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"80%\">\n" +
+            " <tr>\n" +
+            "  <td style=\"font-weight: bold;font-size:1.2em \">\n" +
+            "    아래 6자리 숫자를 입력해주세요\n" +
+            "  </td>\n" +
+            " </tr>\n" +
+            " <tr>\n" +
+            "  <td style=\"padding: 30px 20px 30px 0px; \">\n" +
+            number + "\n" +
+            "\n" +
+            "</td>\n" +
+            " </tr>\n" +
+            "</table>\n" +
+            "<tr>\n" +
+            " <td bgcolor=\"#FE2C55\" style=\"padding: 20px 0px 0px 20px;\">\n" +
+            "\n" +
+            "</td>\n" +
+            " </tr>\n" +
+            "</table></head>\n" +
+            "</html>"
     };
 
     await smtpTransport.sendMail(mailOptions, (error, responses) =>{
@@ -498,7 +537,45 @@ exports.sendEmailNotLogin = async function (req, res) {
         from: "makeus.fofapp@gmail.com",
         to: email,
         subject: "[포프]인증 관련 메일입니다",
-        text: "옆에 6자리의 숫자를 입력해주세요 : " + number
+        html: "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+            " <head>\n" +
+            "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+            "  <title></title>\n" +
+            "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n" +
+            "<table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\">\n" +
+            "\t\n" +
+            "<tr>\n" +
+            "<td bgcolor=\"#000000\" style=\"padding: 40px 30px 30px 30px\">\n" +
+            " <h1><span style=\"color:#FE2C55;\">F</span><span style=\"color:#07C87B;\">O</span><span style=\"color:#FE2C55;\">F</span></h1>\n" +
+            "</td>\n" +
+            " </tr>\n" +
+            "<tr>\n" +
+            " <td bgcolor=\"#07C87B\" style=\"padding: 5px 0px 0px 5px;\">\n" +
+            "\n" +
+            "</td>\n" +
+            " </tr>\n" +
+            " <tr>\n" +
+            "  <td bgcolor=\"#F1F4F9\" style=\"padding: 70px 20px 30px 70px;\">\n" +
+            " <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"80%\">\n" +
+            " <tr>\n" +
+            "  <td style=\"font-weight: bold;font-size:1.2em \">\n" +
+            "    아래 6자리 숫자를 입력해주세요\n" +
+            "  </td>\n" +
+            " </tr>\n" +
+            " <tr>\n" +
+            "  <td style=\"padding: 30px 20px 30px 0px; \">\n" +
+            number + "\n" +
+            "\n" +
+            "</td>\n" +
+            " </tr>\n" +
+            "</table>\n" +
+            "<tr>\n" +
+            " <td bgcolor=\"#FE2C55\" style=\"padding: 20px 0px 0px 20px;\">\n" +
+            "\n" +
+            "</td>\n" +
+            " </tr>\n" +
+            "</table></head>\n" +
+            "</html>"
     };
 
     await smtpTransport.sendMail(mailOptions, (error, responses) =>{
