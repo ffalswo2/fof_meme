@@ -32,6 +32,7 @@ async function searchMemeByCategory(word,page,size) {
 
         return searchRows;
     } catch (err) {
+        connection.release();
         logger.error(`App - searchMemeByCategory DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -95,6 +96,7 @@ async function checkCategoryExist(categoryIdx) {
 
         return checkCategoryExistRows[0].exist;
     } catch (err) {
+        connection.release();
         logger.error(`App - checkCategoryExist DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -115,6 +117,7 @@ async function checkTagExist(tagIdx) {
 
         return checkTagExistRows[0].exist;
     } catch (err) {
+        connection.release();
         logger.error(`App - checkCategoryExist DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -148,6 +151,7 @@ limit 5;
 
         return [categoryTopMemeRows,timeRows];
     } catch (err) {
+        connection.release();
         logger.error(`App - selectCategoryTopMeme DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -180,6 +184,7 @@ select concat(date_format(now(), '%Y-%m-%d %H:'), '00 업데이트') as updateTi
 
         return [trendTagRows,timeRows];
     } catch (err) {
+        connection.release();
         logger.error(`App - selectTrendTag DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -220,6 +225,7 @@ where tagIdx = ?;
 
         return [tagMemeRows,countTagMemeRows];
     } catch (err) {
+        connection.release();
         logger.error(`App - selectTrendTag DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -242,6 +248,7 @@ where replace(tagName, ' ', '') like concat('%', replace(?,' ',''), '%');
 
         return searchRows;
     } catch (err) {
+        connection.release();
         logger.error(`App - searchTagByName DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }

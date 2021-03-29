@@ -2,8 +2,9 @@ const { pool } = require("../../../config/database");
 
 
 async function selectRecUserMeme(userId,page,size) {
-    const connection = await pool.getConnection(async (conn) => conn);
-    const selectMemeQuery = `
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const selectMemeQuery = `
         select Meme.idx                                            as memeIdx,
                User.idx                                            as userIdx,
                User.profileImage                                   as profileImage,
@@ -22,19 +23,26 @@ async function selectRecUserMeme(userId,page,size) {
           and Meme.idx not in (select \`Like\`.memeIdx from \`Like\` where \`Like\`.userIdx = ?)
         group by Meme.idx limit `+page+`, `+size+`;
                 `;
-    const selectMemeParams = [userId,userId,page,size];
-    const [memeRows] = await connection.query(
-        selectMemeQuery,
-        selectMemeParams
-    );
-    connection.release();
+        const selectMemeParams = [userId,userId,page,size];
+        const [memeRows] = await connection.query(
+            selectMemeQuery,
+            selectMemeParams
+        );
+        connection.release();
 
-    return memeRows;
+        return memeRows;
+    } catch (err) {
+        connection.release();
+        logger.error(`App - selectRecUserMeme DB Connection error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+
 }
 
 async function selectRecAllMeme(userId,page,size) {
-    const connection = await pool.getConnection(async (conn) => conn);
-    const selectMemeQuery = `
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const selectMemeQuery = `
         select Meme.idx                                            as memeIdx,
                User.idx                                            as userIdx,
                User.profileImage                                   as profileImage,
@@ -52,14 +60,20 @@ async function selectRecAllMeme(userId,page,size) {
         where Meme.idx not in (select \`Like\`.memeIdx from \`Like\` where \`Like\`.userIdx = ?)
         group by Meme.idx limit `+page+`, `+size+`;
                 `;
-    const selectMemeParams = [userId,page,size];
-    const [memeRows] = await connection.query(
-        selectMemeQuery,
-        selectMemeParams
-    );
-    connection.release();
+        const selectMemeParams = [userId,page,size];
+        const [memeRows] = await connection.query(
+            selectMemeQuery,
+            selectMemeParams
+        );
+        connection.release();
 
-    return memeRows;
+        return memeRows;
+    } catch (err) {
+        connection.release();
+        logger.error(`App - selectRecAllMeme DB Connection error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+
 }
 
 async function checkUserCategory(userId) {
@@ -77,6 +91,7 @@ async function checkUserCategory(userId) {
 
         return checkUserCategoryRows[0].exist;
     } catch (err) {
+        connection.release();
         logger.error(`App - checkUserCategory DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -106,6 +121,7 @@ async function selectSimilarMeme(memeIdx) {
 
         return similarMemeRows;
     } catch (err) {
+        connection.release();
         logger.error(`App - selectSimilarMeme DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -126,6 +142,7 @@ async function checkUserLikeMeme(userId,memeIdx) {
 
         return checkUserLikeMemeRows[0].exist;
     } catch (err) {
+        connection.release();
         logger.error(`App - checkUserLikeMeme DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -149,6 +166,7 @@ async function dislikeMeme(userId,memeIdx) {
 
         return dislikeMemeRows;
     } catch (err) {
+        connection.release();
         logger.error(`App - dislikeMeme DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -170,6 +188,7 @@ async function likeMeme(userId,memeIdx) {
 
         return likeMemeRows;
     } catch (err) {
+        connection.release();
         logger.error(`App - likeMeme DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -190,6 +209,7 @@ async function checkUploader(memeIdx) {
 
         return checkUploaderRows;
     } catch (err) {
+        connection.release();
         logger.error(`App - checkUploader DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -210,6 +230,7 @@ async function deleteMeme(userId,memeIdx) {
 
         return deleteMemeRows;
     } catch (err) {
+        connection.release();
         logger.error(`App - UserCategory DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -230,14 +251,16 @@ async function checkMemeExist(memeIdx) {
 
         return checkMemeExistRows[0].exist;
     } catch (err) {
+        connection.release();
         logger.error(`App - checkMemeExist DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
 }
 
 async function selectAllMeme(userId,page,size) {
-    const connection = await pool.getConnection(async (conn) => conn);
-    const selectAllMemeQuery = `
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const selectAllMemeQuery = `
         select Meme.idx                                            as memeIdx,
                imageUrl
         from Meme
@@ -248,19 +271,26 @@ async function selectAllMeme(userId,page,size) {
                  join Tag on MemeTag.tagIdx = Tag.idx
         group by Meme.idx limit `+page+`, `+size+`;
                 `;
-    const selectAllMemeParams = [userId,page,size];
-    const [selectAllMemeRows] = await connection.query(
-        selectAllMemeQuery,
-        selectAllMemeParams
-    );
-    connection.release();
+        const selectAllMemeParams = [userId,page,size];
+        const [selectAllMemeRows] = await connection.query(
+            selectAllMemeQuery,
+            selectAllMemeParams
+        );
+        connection.release();
 
-    return selectAllMemeRows;
+        return selectAllMemeRows;
+    } catch (err) {
+        connection.release();
+        logger.error(`App - selectAllMeme DB Connection error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+
 }
 
 async function selectUserMeme(userId,page,size) {
-    const connection = await pool.getConnection(async (conn) => conn);
-    const selectUserMemeQuery = `
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const selectUserMemeQuery = `
         select Meme.idx                                            as memeIdx,
                imageUrl
         from Meme
@@ -272,19 +302,26 @@ async function selectUserMeme(userId,page,size) {
         where Category.idx in (select categoryIdx from UserCategory where UserCategory.userIdx = ?)
         group by Meme.idx limit `+page+`, `+size+`;
                 `;
-    const selectUserMemeParams = [userId,page,size];
-    const [selectUserMemeRows] = await connection.query(
-        selectUserMemeQuery,
-        selectUserMemeParams
-    );
-    connection.release();
+        const selectUserMemeParams = [userId,page,size];
+        const [selectUserMemeRows] = await connection.query(
+            selectUserMemeQuery,
+            selectUserMemeParams
+        );
+        connection.release();
 
-    return selectUserMemeRows;
+        return selectUserMemeRows;
+    } catch (err) {
+        connection.release();
+        logger.error(`App - selectUserMeme DB Connection error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+
 }
 
 async function selectMemeDetail(userId,memeIdx) {
-    const connection = await pool.getConnection(async (conn) => conn);
+
     try {
+        const connection = await pool.getConnection(async (conn) => conn);
         await connection.beginTransaction();
 
         const memeDetailQuery = `
@@ -375,6 +412,7 @@ async function checkReportTagExist(reportTagIdx) {
 
         return ReportTagExistRows[0].exist;
     } catch (err) {
+        connection.release();
         logger.error(`App - checkUserLikeMeme DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -434,14 +472,16 @@ async function checkUserReport(userId,memeIdx) {
 
         return UserReportExistRows[0].exist;
     } catch (err) {
+        connection.release();
         logger.error(`App - checkUserLikeMeme DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
 }
 
 async function insertNewMeme(userId,title,imageUrl,copyright,tag,categoryIdx) {
-    const connection = await pool.getConnection(async (conn) => conn);
+
     try {
+        const connection = await pool.getConnection(async (conn) => conn);
         await connection.beginTransaction();
 
         const insertNewMemeQuery = `
@@ -554,6 +594,7 @@ async function updateCopyright(memeIdx,copyright) {
 
         return updateCopyrightRows;
     } catch (err) {
+        connection.release();
         logger.error(`App - dislikeMeme DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }

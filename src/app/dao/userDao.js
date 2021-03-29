@@ -2,50 +2,71 @@ const { pool } = require("../../../config/database");
 
 // Signup
 async function userEmailCheck(email) {
-  const connection = await pool.getConnection(async (conn) => conn);
-  const selectEmailQuery = `
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const selectEmailQuery = `
                 SELECT email, nickName 
                 FROM User 
                 WHERE email = ? and status = 'ACTIVE';
                 `;
-  const selectEmailParams = [email];
-  const [emailRows] = await connection.query(
-      selectEmailQuery,
-      selectEmailParams
-  );
-  connection.release();
+    const selectEmailParams = [email];
+    const [emailRows] = await connection.query(
+        selectEmailQuery,
+        selectEmailParams
+    );
+    connection.release();
 
-  return emailRows;
+    return emailRows;
+  } catch (err) {
+    connection.release();
+    logger.error(`App - userEmailCheck DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+
 }
 
 async function userNicknameCheck(nickname) {
-  const connection = await pool.getConnection(async (conn) => conn);
-  const selectNicknameQuery = `
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const selectNicknameQuery = `
                 SELECT email, nickName 
                 FROM User 
                 WHERE nickName = ?;
                 `;
-  const selectNicknameParams = [nickname];
-  const [nicknameRows] = await connection.query(
-      selectNicknameQuery,
-      selectNicknameParams
-  );
-  connection.release();
-  return nicknameRows;
+    const selectNicknameParams = [nickname];
+    const [nicknameRows] = await connection.query(
+        selectNicknameQuery,
+        selectNicknameParams
+    );
+    connection.release();
+    return nicknameRows;
+  } catch (err) {
+    connection.release();
+    logger.error(`App - userNicknameCheck DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+
 }
 
 async function insertUserInfo(insertUserInfoParams) {
-  const connection = await pool.getConnection(async (conn) => conn);
-  const insertUserInfoQuery = `
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const insertUserInfoQuery = `
         INSERT INTO User(email, password, nickName)
         VALUES (?, ?, ?);
     `;
-  const insertUserInfoRow = await connection.query(
-      insertUserInfoQuery,
-      insertUserInfoParams
-  );
-  connection.release();
-  return insertUserInfoRow;
+    const insertUserInfoRow = await connection.query(
+        insertUserInfoQuery,
+        insertUserInfoParams
+    );
+    connection.release();
+    return insertUserInfoRow;
+  } catch (err) {
+    connection.release();
+    logger.error(`App - insertUserInfo DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+
 }
 
 //SignIn
@@ -91,6 +112,8 @@ async function setUserCategory(userId,categoryIdx) {
     connection.release();
 
   } catch (err) {
+    connection.rollback();
+    connection.release();
     logger.error(`App - setUserCategory DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
@@ -127,6 +150,8 @@ async function transUserCategory(userId,categoryIdx) {
     connection.release();
 
   } catch (err) {
+    connection.rollback();
+    connection.release();
     logger.error(`App - transUserCategory DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
@@ -150,6 +175,7 @@ async function deleteUser(userId) {
 
     return deleteUserRows;
   } catch (err) {
+    connection.release();
     logger.error(`App - deleteUser DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
 
@@ -198,6 +224,7 @@ async function getUserProfile(userId) {
 
     return [userProfileRows,userInsightRows];
   } catch (err) {
+    connection.release();
     logger.error(`App - getUserProfile DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
@@ -220,6 +247,7 @@ async function selectUploadedMeme(userId,page,size) {
 
     return userUploadRows;
   } catch (err) {
+    connection.release();
     logger.error(`App - selectUploadedMeme DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
@@ -245,6 +273,7 @@ async function selectUserFavMeme(userId,page,size) {
 
     return selectUserFavRows;
   } catch (err) {
+    connection.release();
     logger.error(`App - selectUserFavMeme DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
@@ -265,6 +294,7 @@ async function updateUserEmailNickname(userId,email,nickname) {
 
     return updateUserRows;
   } catch (err) {
+    connection.release();
     logger.error(`App - updateUserEmailNickname DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
@@ -286,6 +316,7 @@ async function updateUserEmail(userId,email) {
 
     return updateUserRows;
   } catch (err) {
+    connection.release();
     logger.error(`App - updateUserEmail DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
@@ -307,6 +338,7 @@ async function updateUserNickname(userId,nickname) {
 
     return updateUserRows;
   } catch (err) {
+    connection.release();
     logger.error(`App - updateUserNickname DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
@@ -328,22 +360,30 @@ async function updateUserImage(userId,imageUrl) {
 
     return updateUserRows;
   } catch (err) {
+    connection.release();
     logger.error(`App - updateUserImage DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
 }
 
 async function changeUserPw(insertUserInfoParams) {
-  const connection = await pool.getConnection(async (conn) => conn);
-  const insertUserInfoQuery = `
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const insertUserInfoQuery = `
     update User set password = ? where User.idx = ?;
     `;
-  const insertUserInfoRow = await connection.query(
-      insertUserInfoQuery,
-      insertUserInfoParams
-  );
-  connection.release();
-  return insertUserInfoRow;
+    const insertUserInfoRow = await connection.query(
+        insertUserInfoQuery,
+        insertUserInfoParams
+    );
+    connection.release();
+    return insertUserInfoRow;
+  } catch (err) {
+    connection.release();
+    logger.error(`App - changeUserPw DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+
 }
 
 async function checkUserCategory(userId) {
@@ -361,6 +401,7 @@ async function checkUserCategory(userId) {
 
     return UserCategoryExistRows[0].exist;
   } catch (err) {
+    connection.release();
     logger.error(`App - checkUserCategory DB Connection error\n: ${err.message}`);
     return res.status(500).send(`Error: ${err.message}`);
   }
