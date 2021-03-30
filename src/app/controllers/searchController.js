@@ -12,7 +12,7 @@ exports.getSearchMeme = async function (req, res) {
     } = req.query;
 
     if (!word) return res.json({ isSuccess: false, code: 300, message: "검색어를 입력해주세요" });
-    if (word.replace(' ','') === '#') return res.json({ isSuccess: false, code: 315, message: "# 뒤에 문자를 입력해주세요" })
+    if (word.trim() === '#') return res.json({ isSuccess: false, code: 315, message: "# 뒤에 문자를 입력해주세요" })
     if (word.length > 15) return res.json({ isSuccess: false, code: 301, message: "검색어를 15자 미만으로 줄여주세요" });
     if (!page) return res.json({ isSuccess: false, code: 302, message: "페이지를 입력해주세요" });
     if (!size) return res.json({ isSuccess: false, code: 303, message: "사이즈를 입력해주세요" });
