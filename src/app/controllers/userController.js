@@ -597,6 +597,46 @@ exports.sendEmailNotLogin = async function (req, res) {
     });
 }
 
+exports.changeGuestPw = async function (req, res) {
+    const {
+        email,password
+    } = req.body;
+
+    if (typeof email != "string") return res.json({isSuccess: false, code: 310, message: "이메일 타입을 다시 한번 확인해주세요"});
+    if (!email) return res.json({isSuccess: false, code: 301, message: "이메일을 입력해주세요."});
+    if (email.length > 30) return res.json({
+        isSuccess: false,
+        code: 302,
+        message: "이메일은 30자리 미만으로 입력해주세요."
+    });
+
+    if (!regexEmail.test(email)) return res.json({isSuccess: false, code: 303, message: "이메일을 형식을 정확하게 입력해주세요."});
+    if (!password || !regexPassword.test(password)) return res.json({isSuccess: false, code: 304, message: "비밀번호를 다시 확인해주세요."});
+    if (password.length < 6 || password.length > 20) return res.json({
+        isSuccess: false,
+        code: 305,
+        message: "비밀번호는 6~20자리를 입력해주세요."
+    });
+
+    try {
+
+        const hashedPassword = await crypto.createHash('sha512').update(password).digest('hex');
+
+        const updateUserPwRows = await usermDao.changeGuestPw(email,hashedPassword);
+
+
+        logger.debug('비밀번호 변경 요청 성공입니다.');
+        return res.json({
+            isSuccess: true,
+            code: 200,
+            message: "게스트 비밀번호 변경 성공"
+        });
+    } catch (err) {
+        logger.error(`App - changeGuestPw Query error\n: ${err.message}`);
+        return res.status(500).send(`Error: ${err.message}`);
+    }
+}
+
 exports.changePw = async function (req, res) {
     const userId = req.verifiedToken.userId;
     const userEmail = req.verifiedToken.email;

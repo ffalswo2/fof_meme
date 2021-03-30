@@ -386,6 +386,27 @@ async function changeUserPw(insertUserInfoParams) {
 
 }
 
+async function changeGuestPw(email,hashedPassword) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const changeGuestPwQuery = `
+      update User set password = ? where User.email = ?;
+        `;
+    const changeGuestPwParams = [hashedPassword,email];
+    const [changeGuestPwRows] = await connection.query(
+        changeGuestPwQuery,
+        changeGuestPwParams
+    );
+    connection.release();
+
+    return changeGuestPwRows;
+  } catch (err) {
+    connection.release();
+    logger.error(`App - changeGuestPw DB Connection error\n: ${err.message}`);
+    return res.status(500).send(`Error: ${err.message}`);
+  }
+}
+
 async function checkUserCategory(userId) {
   try {
     const connection = await pool.getConnection(async (conn) => conn);
@@ -423,5 +444,6 @@ module.exports = {
   changeUserPw,
   transUserCategory,
   checkUserCategory,
-  updateUserImage
+  updateUserImage,
+  changeGuestPw
 };
