@@ -20,7 +20,7 @@ if (process.env.NODE_ENV === 'production') {
         user: 'ffalswo2',
         port: 3306,
         password: 'stephan98!',
-        database: 'fof-Prod'
+        database: 'fofDB-prod'
     });
 }
 
