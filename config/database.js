@@ -12,7 +12,9 @@ if (process.env.NODE_ENV === 'development') {
         password: 'stephan98!',
         database: 'fofDB'
     });
-} else if (process.env.NODE_ENV === 'production') {
+}
+
+if (process.env.NODE_ENV === 'production') {
     pool = mysql.createPool({
         host: 'database-fof.cipxoaemvcst.ap-northeast-2.rds.amazonaws.com',
         user: 'ffalswo2',
