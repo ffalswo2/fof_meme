@@ -12,6 +12,7 @@ exports.getSearchMeme = async function (req, res) {
     } = req.query;
 
     if (!word) return res.json({ isSuccess: false, code: 300, message: "검색어를 입력해주세요" });
+    if (word.replace(' ','') === '#') return res.json({ isSuccess: false, code: 305, message: "# 뒤에 문자를 입력해주세요" })
     if (word.length > 15) return res.json({ isSuccess: false, code: 301, message: "검색어를 15자 미만으로 줄여주세요" });
     if (!page) return res.json({ isSuccess: false, code: 302, message: "페이지를 입력해주세요" });
     if (!size) return res.json({ isSuccess: false, code: 303, message: "사이즈를 입력해주세요" });
@@ -19,20 +20,20 @@ exports.getSearchMeme = async function (req, res) {
 
     page = size * (page-1);
     let firstWord = word.substr(0,1);
+
     if (firstWord === '#') { // 태그 검색이라면
         word = word.substring(1,)
 
         try {
             const tagSearchRows = await searchDao.searchMemeByTag(word, page, size);
 
-            if (!tagSearchRows) {
-                return res.json({
-                    isSuccess: false,
-                    code: 320,
-                    message: "밈 태그 검색 결과 조회 실패"
-                });
-            }
-
+            // if (tagSearchRows.length ) {
+            //     return res.json({
+            //         isSuccess: false,
+            //         code: 320,
+            //         message: "밈 태그 검색 결과 조회 실패"
+            //     });
+            // }
             // {countProduct: searchRows[0][0].countProduct, productList: searchRows[1]}
             res.json({
                 data: tagSearchRows,
@@ -41,7 +42,7 @@ exports.getSearchMeme = async function (req, res) {
                 message: "밈 태그 검색 결과 조회 성공"
             });
         } catch (err) {
-            logger.error(`App - getSearchMeme Query error\n: ${JSON.stringify(err)}`);
+            logger.error(`App - getTagSearchMeme Query error\n: ${JSON.stringify(err)}`);
             return false;
         }
 
@@ -65,7 +66,7 @@ exports.getSearchMeme = async function (req, res) {
                 message: "밈 카테고리 검색 결과 조회 성공"
             });
         } catch (err) {
-            logger.error(`App - getSearchMeme Query error\n: ${JSON.stringify(err)}`);
+            logger.error(`App - getCategorySearchMeme Query error\n: ${JSON.stringify(err)}`);
             return false;
         }
     }

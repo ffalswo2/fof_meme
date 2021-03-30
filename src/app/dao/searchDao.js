@@ -50,11 +50,18 @@ async function searchMemeByTag(word,page,size) {
                      join Tag on MemeTag.tagIdx = Tag.idx
             where replace(tagName, ' ', '') like concat('%', replace(?,' ',''), '%') group by memeIdx limit ` + page + `, ` + size + `;
         `;
-        const searchParams = [word,page,size];
+        const searchParams = [word];
         const [searchRows] = await connection.query(
             searchQuery,
             searchParams
         );
+
+        if (searchRows.length < 1) { // 빈값
+            await connection.commit();
+            await connection.release();
+
+            return searchRows;
+        }
 
         const tagId = searchRows[0].tagIdx;
 
@@ -69,13 +76,13 @@ where Tag.idx = ?;
             updateCountParams
         );
 
-        connection.commit();
-        connection.release();
+        await connection.commit();
+        await connection.release();
 
         return searchRows;
     } catch (err) {
-        connection.rollback();
-        connection.release();
+        await connection.rollback();
+        await connection.release();
         logger.error(`App - searchMemeByTag DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -113,11 +120,11 @@ async function checkTagExist(tagIdx) {
             checkTagExistQuery,
             checkTagExistParams
         );
-        connection.release();
+        await connection.release();
 
         return checkTagExistRows[0].exist;
     } catch (err) {
-        connection.release();
+        await connection.release();
         logger.error(`App - checkCategoryExist DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
@@ -221,11 +228,11 @@ where tagIdx = ?;
             tagMemeQuery,
             tagMemeParams
         );
-        connection.release();
+        await connection.release();
 
         return [tagMemeRows,countTagMemeRows];
     } catch (err) {
-        connection.release();
+        await connection.release();
         logger.error(`App - selectTrendTag DB Connection error\n: ${err.message}`);
         return res.status(500).send(`Error: ${err.message}`);
     }
