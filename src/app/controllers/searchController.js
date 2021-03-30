@@ -22,8 +22,7 @@ exports.getSearchMeme = async function (req, res) {
     let firstWord = word.substr(0,1);
 
     if (firstWord === '#') { // 태그 검색이라면
-        word = word.substring(1,)
-
+        word = word.substring(1,).trim();
         try {
             const tagSearchRows = await searchDao.searchMemeByTag(word, page, size);
 
