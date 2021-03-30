@@ -97,7 +97,7 @@ async function checkUserCategory(userId) {
     }
 }
 
-async function selectSimilarMeme(memeIdx) {
+async function selectSimilarMeme(memeIdx,page,size) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
         const similarMemeQuery = `
@@ -110,7 +110,7 @@ async function selectSimilarMeme(memeIdx) {
                                             left join MemeCategory on Meme.idx = MemeCategory.memeIdx
                                             left join Category on Category.idx = MemeCategory.categoryIdx
                                    where Meme.idx = ?) and Meme.idx not in (select idx from Meme where Meme.idx = ?)
-            group by Meme.idx;
+            group by Meme.idx limit ` + page + `, ` + size + `;
         `;
         const similarMemeParams = [memeIdx,memeIdx];
         const [similarMemeRows] = await connection.query(

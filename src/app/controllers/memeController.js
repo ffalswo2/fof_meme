@@ -125,7 +125,7 @@ exports.getSimilarMeme = async function (req, res) {
     page = (page - 1) * size
 
     try {
-        const similarMemeRows = await memeDao.selectSimilarMeme(memeIdx);
+        const similarMemeRows = await memeDao.selectSimilarMeme(memeIdx,page,size);
 
         if (!similarMemeRows) {
             return res.json({
