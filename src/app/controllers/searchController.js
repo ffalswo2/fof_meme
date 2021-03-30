@@ -161,13 +161,13 @@ exports.getMemeByTagIdx = async function (req, res) {
         if (checkTagExist) { // 태그 아이디값이 존재한다면
             const searchMemeByTagIdx = await searchDao.selectMemeByTagIdx(tagIdx);
 
-            if (!searchMemeByTagIdx) {
-                res.json({
-                    isSuccess: false,
-                    code: 300,
-                    message: "태그 아이디를 통한 밈 검색 실패"
-                });
-            }
+            // if (searchMemeByTagIdx.length < 1) {
+            //     res.json({
+            //         isSuccess: false,
+            //         code: 300,
+            //         message: "태그 아이디를 통한 밈 검색 실패"
+            //     });
+            // }
 
             res.json({
                 data: {memeCount : searchMemeByTagIdx[1][0].memeCount,memeList : searchMemeByTagIdx[0]},
