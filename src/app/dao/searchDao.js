@@ -48,7 +48,7 @@ async function searchMemeByTag(word,page,size) {
             from Meme
                      join MemeTag on MemeTag.memeIdx = Meme.idx
                      join Tag on MemeTag.tagIdx = Tag.idx
-            where replace(tagName, ' ', '') like concat('%', replace(?,' ',''), '%') limit ` + page + `, ` + size + `;
+            where replace(tagName, ' ', '') like concat('%', replace(?,' ',''), '%') group by memeIdx limit ` + page + `, ` + size + `;
         `;
         const searchParams = [word,page,size];
         const [searchRows] = await connection.query(
