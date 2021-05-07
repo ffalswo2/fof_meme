@@ -74,7 +74,7 @@ async function selectUserInfo(email) {
   try {
     const connection = await pool.getConnection(async (conn) => conn);
     const selectUserInfoQuery = `
-        select idx, email, password, status from User where email = ?;
+        select idx, email, password, status from User where email = ? and status = 'ACTIVE';
         `;
     const selectUserInfoParams = [email];
     const [userInfoRows] = await connection.query(
